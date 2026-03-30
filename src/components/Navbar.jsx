@@ -226,13 +226,7 @@ const Navbar = () => {
             <NavLink to="/" className="hover:text-white transition">
               Home
             </NavLink>
-            <NavLink
-              to="/help-center"
-              onClick={() => setIsOpen(false)}
-              className="block font-medium hover:text-orange-600"
-            >
-              Help Centre
-            </NavLink>
+
             {/* SERVICES */}
             <div className="relative" ref={servicesRef}>
               <button

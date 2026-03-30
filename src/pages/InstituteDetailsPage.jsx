@@ -112,7 +112,7 @@ export default function InstituteDetailsPage() {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen bg-gray-50 px-5 md:px-24 py-10"
+      className="min-h-screen bg-gray-50 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-8"
     >
       {/* Back */}
       <button
@@ -123,163 +123,219 @@ export default function InstituteDetailsPage() {
       </button>
 
       {/* HEADER */}
-      <div className="bg-white rounded-3xl shadow-xl p-8 grid lg:grid-cols-[350px_1fr] gap-10">
-        {/* LEFT */}
-        <div className="flex flex-col items-center text-center">
-          <img
-            src={inst.profileImageUrl}
-            className="w-44 h-44 rounded-full object-cover border-4 border-orange-400 shadow-lg"
-          />
+      <div className="bg-white rounded-3xl shadow-lg p-6 md:p-8">
+        {/* TOP ROW */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          {/* LEFT SIDE - Logo + Name */}
+          <div className="flex items-center gap-5">
+            <img
+              src={inst.profileImageUrl}
+              className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-orange-400"
+            />
 
-          <h1 className="text-3xl font-extrabold text-orange-600 mt-4">
-            {inst.instituteName}
-          </h1>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold">
+                {inst.instituteName}
+                <span className="ml-3 text-sm bg-orange-100 text-orange-600 px-2 py-1 rounded-md font-semibold">
+                  ⭐ {inst.rating?.toFixed(1) || "0.0"}
+                </span>
+              </h1>
 
-          <p className="text-gray-500 mt-2">{inst.organizationType}</p>
-
-          {/* Rating */}
-          <div className="flex gap-1 mt-3">
-{[1, 2, 3, 4, 5].map((s) => {
-  const isActive =
-    inst.ratingsByUser?.[auth.currentUser?.uid] >= s;
-
-  return (
-    <Star
-      key={s}
-      onClick={() => handleRating(s)}
-      className={`w-6 h-6 cursor-pointer ${
-        isActive
-          ? "text-yellow-400 fill-yellow-400"
-          : "text-gray-300"
-      }`}
-    />
-  );
-})}
+              <p className="text-gray-500 mt-1">{inst.organizationType}</p>
+            </div>
           </div>
 
-          <p className="text-sm font-semibold mt-1">
-            {inst.rating?.toFixed(1) || "0.0"} ⭐ ({inst.ratingCount || 0}{" "}
-            reviews)
-          </p>
+          {/* RIGHT SIDE - Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => navigate(`/book-demo/${inst.id}`)}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2"
+            >
+              <Calendar size={16} />
+              Book a Slot
+            </button>
 
-          {/* Buttons */}
-          <div className="flex flex-col gap-3 w-full mt-6">
-<a href={`tel:${inst.phoneNumber}`} className="btn-primary">
-  <img src="/call-icon.png" className="w-4 h-4" alt="call" />
-  Call
-</a>
-
-<button
-  onClick={() => navigate(`/book-demo/${inst.id}`)}
-  className="btn-success"
->
-  <Calendar size={16} className="text-[#000000]" />
-  Book Demo Class
-</button>
-
-{auth.currentUser && (
-  <button onClick={() => startInstituteChat()} className="btn-primary">
-    <img src="/chat-icon.png" className="w-5 h-5" alt="chat" />
-    Chat with Institute
-  </button>
-)}
-
-{inst.email && inst.email.includes("@") && (
-  <a
-    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${inst.email.trim()}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="btn-outline"
-  >
-    <img src="/email-icon.png" className="w-4 h-4" alt="email" />
-    Email
-  </a>
-)}
+            {inst.email && inst.email.includes("@") && (
+              <a
+                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${inst.email.trim()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline"
+              >
+                <img src="/email-icon.png" className="w-4 h-4" alt="email" />
+                Email
+              </a>
+            )}
+            {auth.currentUser && (
+              <button
+                onClick={() => startInstituteChat()}
+                className="border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold flex items-center gap-2"
+              >
+                Chat Now
+              </button>
+            )}
+            <a
+              href={`tel:${inst.phoneNumber}`}
+              className="border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold flex items-center gap-2"
+            >
+              <Phone size={16} />
+              Call Now
+            </a>
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="grid gap-6">
-          <InfoGrid inst={inst} />
-
-          {/* MAP */}
-          <div className="w-full h-[300px] rounded-2xl overflow-hidden border">
-            <iframe src={mapSrc} className="w-full h-full" loading="lazy" />
-          </div>
+        {/* INFO BOXES ROW */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <InfoItem icon={MapPin} label="Location" value={inst.city} />
+          <InfoItem
+            icon={Users}
+            label="Students"
+            value={inst.customers?.length || 0}
+          />
+          <InfoItem
+            icon={UserCheck}
+            label="Trainers"
+            value={inst.trainers?.length || 0}
+          />
+          <InfoItem icon={Calendar} label="Founded" value={inst.yearFounded} />
         </div>
       </div>
 
       {/* SECTIONS */}
-      <div className="mt-14 grid gap-10">
+      <div className="mt-14 grid gap-8">
         {/* ABOUT */}
         <Card title="About Institute" icon={Building2}>
-          {inst.description}
+          <div className="whitespace-pre-line">{inst.description}</div>
         </Card>
 
         {/* FOUNDER */}
-        <Card title="Founder & Leadership" icon={BadgeCheck}>
-          <p>
-            <b>Founder:</b> {inst.founderName}
-          </p>
-          <p>
-            <b>Designation:</b> {inst.designation}
-          </p>
-        </Card>
+        <div className="grid md:grid-cols-2 gap-8">
+          <Card title="Founder & Leadership">
+            <p>
+              <span className="font-semibold">Founder :</span>{" "}
+              {inst.founderName}
+            </p>
 
-        {/* ACHIEVEMENTS */}
-        <Card title="Achievements" icon={Award}>
-          {["district", "state", "national"].map((lvl) => (
-            <div key={lvl} className="mb-3">
-              <h4 className="font-bold capitalize">{lvl}</h4>
-<p className="flex items-center gap-2 flex-wrap">
-  <span className="flex items-center gap-1">
-    <img src="/gold-medal.png" className="w-4 h-4" alt="gold" />
-    Gold: {inst.achievements?.[lvl]?.gold || 0}
-  </span>
+            <p>
+              <span className="font-semibold">Designation :</span>{" "}
+              {inst.designation}
+            </p>
+          </Card>
 
-  <span className="flex items-center gap-1">
-    <img src="/silver-medal.png" className="w-4 h-4" alt="silver" />
-    Silver: {inst.achievements?.[lvl]?.silver || 0}
-  </span>
+          {/* ACHIEVEMENTS */}
+          <Card title="Achievements">
+            <p>
+              <span className="font-semibold">District :</span> Gold{" "}
+              {inst.achievements?.district?.gold || 0}, Silver{" "}
+              {inst.achievements?.district?.silver || 0}, Bronze{" "}
+              {inst.achievements?.district?.bronze || 0}
+            </p>
 
-  <span className="flex items-center gap-1">
-    <img src="/bronze-medal.png" className="w-4 h-4" alt="bronze" />
-    Bronze: {inst.achievements?.[lvl]?.bronze || 0}
-  </span>
-</p>
-            </div>
-          ))}
-        </Card>
+            <p>
+              <span className="font-semibold">State :</span> Gold{" "}
+              {inst.achievements?.state?.gold || 0}, Silver{" "}
+              {inst.achievements?.state?.silver || 0}, Bronze{" "}
+              {inst.achievements?.state?.bronze || 0}
+            </p>
+
+            <p>
+              <span className="font-semibold">National :</span> Gold{" "}
+              {inst.achievements?.national?.gold || 0}, Silver{" "}
+              {inst.achievements?.national?.silver || 0}, Bronze{" "}
+              {inst.achievements?.national?.bronze || 0}
+            </p>
+          </Card>
+        </div>
 
         {/* TRAINING PROGRAM */}
-        <Card title="Training Program" icon={BookOpen}>
-          {Object.entries(inst.trainingProgram || {}).map(([k, v]) => (
-            <p key={k}>
-              <b>{k}:</b> {v}
-            </p>
-          ))}
-        </Card>
+        <div className="grid md:grid-cols-2 gap-8">
+          <Card title="Training Program">
+            <div className="space-y-2">
+              <p>
+                <span className="font-semibold">Age Group :</span>{" "}
+                {inst.trainingProgram?.ageGroup || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Program Name :</span>{" "}
+                {inst.trainingProgram?.programName || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Skill Level :</span>{" "}
+                {inst.trainingProgram?.skillLevel || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Seats Available :</span>{" "}
+                {inst.trainingProgram?.seatsAvailable || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Fees :</span> ₹{" "}
+                {inst.trainingProgram?.fees || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Duration :</span>{" "}
+                {inst.trainingProgram?.duration || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Trial Sessions :</span>{" "}
+                {inst.trainingProgram?.trialSessions || "-"}
+              </p>
+              <p>
+                <span className="font-semibold">Batch Timings :</span>{" "}
+                {inst.trainingProgram?.batchTimings || "-"}
+              </p>
+            </div>
+          </Card>
 
-        {/* PRICING */}
-        <Card title="Pricing & Fees" icon={Wallet}>
-          <p>Monthly Fees: ₹{inst.pricing?.monthlyFees}</p>
-          <p>Registration Fees: ₹{inst.pricing?.registrationFees}</p>
-          <p>Uniform Cost: ₹{inst.pricing?.uniformCost}</p>
-          <p>Payment Methods: {inst.pricing?.paymentMethods}</p>
-          <p>Refund Policy: {inst.pricing?.refundPolicy}</p>
-        </Card>
+          {/* PRICING */}
+          <Card title="Pricing & Fees">
+            <div className="space-y-2">
+              <p>
+                <span className="font-semibold">Monthly Fees :</span> ₹{" "}
+                {inst.pricing?.monthlyFees}
+              </p>
+              <p>
+                <span className="font-semibold">Registration Fees :</span> ₹{" "}
+                {inst.pricing?.registrationFees}
+              </p>
+              <p>
+                <span className="font-semibold">Uniform Cost :</span> ₹{" "}
+                {inst.pricing?.uniformCost}
+              </p>
+              <p>
+                <span className="font-semibold">Payment Method :</span>{" "}
+                {inst.pricing?.paymentMethods}
+              </p>
+
+              {inst.pricing?.refundPolicy && (
+                <div className="mt-3 text-sm text-gray-600">
+                  <span className="font-semibold text-orange-600">
+                    Refund Policy :
+                  </span>
+                  <p className="mt-1 whitespace-pre-line">
+                    {inst.pricing?.refundPolicy}
+                  </p>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
 
         {/* POLICIES */}
-        <Card title="Policies & Agreements" icon={ShieldCheck}>
+        <Card title="Policies & Agreements">
           <p>
-            Merchant Policy: {inst.agreements?.merchantPolicy ? "✅" : "❌"}
+            <span className="font-semibold">Policies & Agreements :</span>{" "}
+            {inst.agreements?.merchantPolicy &&
+            inst.agreements?.paymentPolicy &&
+            inst.agreements?.privacyPolicy &&
+            inst.agreements?.termsAndConditions
+              ? "Policies & Agreements include Merchant Policy, Payment Policy, Privacy Policy, and Terms & Conditions, all of which have been accepted."
+              : "Policies & Agreements have not been fully accepted."}
           </p>
-          <p>Payment Policy: {inst.agreements?.paymentPolicy ? "✅" : "❌"}</p>
-          <p>Privacy Policy: {inst.agreements?.privacyPolicy ? "✅" : "❌"}</p>
-          <p>
-            Terms & Conditions:{" "}
-            {inst.agreements?.termsAndConditions ? "✅" : "❌"}
-          </p>
+        </Card>
+        <Card title="Location Map" icon={MapPin}>
+          <div className="w-full h-[280px] md:h-[350px] rounded-xl overflow-hidden border">
+            <iframe src={mapSrc} className="w-full h-full" loading="lazy" />
+          </div>
         </Card>
 
         {/* MEDIA */}
@@ -301,6 +357,49 @@ export default function InstituteDetailsPage() {
             data={inst.mediaGallery?.uniformImages}
           />
         </Card>
+        {/* CUSTOMER REVIEWS */}
+        <div className="mt-14">
+          <h2 className="text-2xl font-bold text-orange-600 mb-6">
+            Customer Reviews
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="bg-white border border-orange-300 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
+              >
+                {/* Profile + Name */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-full bg-gray-300"></div>
+
+                  <div>
+                    <h3 className="font-bold text-lg">Customer Name</h3>
+                    <p className="text-sm text-gray-500">
+                      Karate, Gym, Swimming
+                    </p>
+                  </div>
+                </div>
+
+                {/* Review Text */}
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Great experience overall! The facilities are well-maintained,
+                  and the coaches are really supportive and knowledgeable.
+                  Booking slots was smooth and hassle-free, and the staff was
+                  friendly and helpful throughout.
+                </p>
+
+                {/* Bottom Rating */}
+                <div className="mt-5 flex items-center justify-between text-xs text-gray-500 border-t pt-3">
+                  <span className="bg-orange-100 text-orange-600 px-2 py-1 rounded-md font-semibold">
+                    ⭐ 4.5
+                  </span>
+                  <span>Excellent • 02 Weeks Ago • 1.2k found helpful</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -309,10 +408,8 @@ export default function InstituteDetailsPage() {
 /* COMPONENTS */
 
 const Card = ({ title, icon: Icon, children }) => (
-  <div className="bg-white rounded-2xl shadow-md p-6">
-    <h2 className="flex items-center gap-2 text-xl font-bold text-orange-600 mb-4">
-      {Icon && <Icon size={20} />} {title}
-    </h2>
+  <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6 md:p-8 hover:shadow-md transition">
+    <h2 className="text-xl font-bold text-orange-600 mb-4">{title}</h2>
     <div className="text-gray-700 space-y-2">{children}</div>
   </div>
 );
@@ -322,7 +419,7 @@ const MediaGrid = ({ title, data }) => {
   return (
     <div className="mb-5">
       <h3 className="font-semibold mb-2">{title}</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {data.map((url, i) => (
           <img
             key={i}
@@ -363,7 +460,7 @@ const InfoGrid = ({ inst }) => (
 );
 
 const InfoItem = ({ icon: Icon, label, value }) => (
-  <div className="flex items-center gap-3 bg-gray-100 p-4 rounded-xl">
+  <div className="flex items-center gap-3 bg-white border border-orange-200 p-4 rounded-xl shadow-sm hover:shadow-md transition">
     <Icon className="text-orange-500" />
     <div>
       <p className="text-xs text-gray-500">{label}</p>

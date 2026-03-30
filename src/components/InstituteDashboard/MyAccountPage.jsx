@@ -2207,25 +2207,44 @@ const MyAccountPage = ({ setActiveMenu }) => {
                       className="border rounded-lg px-3 py-2"
                     />
                     {/* Belt */}
-                    <select
-                      value={sports[index]?.belt || ""}
-                      onChange={(e) => {
-                        const updatedSports = [...sports];
-                        updatedSports[index].belt = e.target.value;
-                        setSports(updatedSports);
-                      }}
-                      className="w-full border rounded-lg px-3 py-2"
-                    >
-                      <option value="">Select Belt</option>
-
-                      <option value="White">White</option>
-                      <option value="Yellow">Yellow</option>
-                      <option value="Orange">Orange</option>
-                      <option value="Green">Green</option>
-                      <option value="Blue">Blue</option>
-                      <option value="Brown">Brown</option>
-                      <option value="Black">Black</option>
-                    </select>
+                    {/* Belt / Skill Level */}
+                    {sport.category === "Martial Arts" ? (
+                      // ✅ Martial Arts → Show Belt
+                      <select
+                        value={sports[index]?.belt || ""}
+                        onChange={(e) => {
+                          const updatedSports = [...sports];
+                          updatedSports[index].belt = e.target.value;
+                          setSports(updatedSports);
+                        }}
+                        className="w-full border rounded-lg px-3 py-2"
+                      >
+                        <option value="">Select Belt</option>
+                        <option value="White">White</option>
+                        <option value="Yellow">Yellow</option>
+                        <option value="Orange">Orange</option>
+                        <option value="Green">Green</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Brown">Brown</option>
+                        <option value="Black">Black</option>
+                      </select>
+                    ) : (
+                      // ✅ Other Categories → Show Skill Level
+                      <select
+                        value={sports[index]?.skillLevel || ""}
+                        onChange={(e) => {
+                          const updatedSports = [...sports];
+                          updatedSports[index].skillLevel = e.target.value;
+                          setSports(updatedSports);
+                        }}
+                        className="w-full border rounded-lg px-3 py-2"
+                      >
+                        <option value="">Select Skill Level</option>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    )}
 
                     {/* Remove */}
                     <button

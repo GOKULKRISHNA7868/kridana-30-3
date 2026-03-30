@@ -471,13 +471,12 @@ export default function AddTrainerDetailsPage() {
     if (formData.joiningDate && isFutureDate(formData.joiningDate)) {
       newErrors.joiningDate = "Joining date cannot be future date";
     }
-// ✅ ADD THIS (DOB vs Joining validation)
-if (formData.dateOfBirth && formData.joiningDate) {
-  if (formData.joiningDate <= formData.dateOfBirth) {
-    newErrors.joiningDate =
-      "Joining date must be AFTER Date of Birth";
-  }
-}
+    // ✅ ADD THIS (DOB vs Joining validation)
+    if (formData.dateOfBirth && formData.joiningDate) {
+      if (formData.joiningDate <= formData.dateOfBirth) {
+        newErrors.joiningDate = "Joining date must be AFTER Date of Birth";
+      }
+    }
     if (step === 2) {
       if (!formData.monthlyFee.trim())
         newErrors.monthlyFee = "Monthly Fee is required";
@@ -1015,39 +1014,39 @@ Password: ${DEFAULT_PASSWORD}`);
               <input
                 type="date"
                 className={inputClass}
-              min={
-  formData.dateOfBirth
-    ? new Date(
-        new Date(formData.dateOfBirth).setDate(
-          new Date(formData.dateOfBirth).getDate() + 1
-        )
-      )
-        .toISOString()
-        .split("T")[0]
-    : "1900-01-01"
-}
+                min={
+                  formData.dateOfBirth
+                    ? new Date(
+                        new Date(formData.dateOfBirth).setDate(
+                          new Date(formData.dateOfBirth).getDate() + 1,
+                        ),
+                      )
+                        .toISOString()
+                        .split("T")[0]
+                    : "1900-01-01"
+                }
                 max={new Date().toISOString().split("T")[0]}
                 value={formData.joiningDate}
-               onChange={(e) => {
-  const value = e.target.value;
+                onChange={(e) => {
+                  const value = e.target.value;
 
-  if (formData.dateOfBirth && value <= formData.dateOfBirth) {
-    setErrors((prev) => ({
-      ...prev,
-      joiningDate: "Joining date must be AFTER DOB",
-    }));
-  } else {
-    setErrors((prev) => ({
-      ...prev,
-      joiningDate: "",
-    }));
-  }
+                  if (formData.dateOfBirth && value <= formData.dateOfBirth) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      joiningDate: "Joining date must be AFTER DOB",
+                    }));
+                  } else {
+                    setErrors((prev) => ({
+                      ...prev,
+                      joiningDate: "",
+                    }));
+                  }
 
-  setFormData((prev) => ({
-    ...prev,
-    joiningDate: value,
-  }));
-}}
+                  setFormData((prev) => ({
+                    ...prev,
+                    joiningDate: value,
+                  }));
+                }}
               />
               {errors.joiningDate && (
                 <span className="text-red-500 text-xs mt-1">
@@ -1401,27 +1400,28 @@ Password: ${DEFAULT_PASSWORD}`);
                   Monthly Payment Date* (1 - 31)
                 </label>
 
-                <input
-                  type="number"
-                  min={1}
-                  max={31}
-                  className={inputClass}
-                  value={formData.monthlyDate}
-                  placeholder="Enter day (e.g., 5)"
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "");
-
-                    if (
-                      value === "" ||
-                      (Number(value) >= 1 && Number(value) <= 31)
-                    ) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        monthlyDate: value,
-                      }));
-                    }
-                  }}
-                />
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          monthlyDate: day,
+                        }))
+                      }
+                      className={`p-2 rounded-lg border text-sm
+        ${
+          formData.monthlyDate == day
+            ? "bg-blue-500 text-white border-blue-500"
+            : "bg-white hover:bg-gray-100"
+        }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
 
                 {errors.monthlyDate && (
                   <span className="text-red-500 text-xs mt-1">

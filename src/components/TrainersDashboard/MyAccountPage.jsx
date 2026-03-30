@@ -554,71 +554,70 @@ const MyAccountPage = ({ setActiveMenu }) => {
     }
   };
   /* ================= UPLOAD PROFILE IMAGE ================= */
-const handleProfileUpload = async (e) => {
-  const file = e.target.files[0];
-  if (!file || !user?.uid) return;
+  const handleProfileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !user?.uid) return;
 
-  const url = await uploadToCloudinary(file, "image");
+    const url = await uploadToCloudinary(file, "image");
 
-  if (!url) return;
+    if (!url) return;
 
-  try {
-    // update UI instantly
-    setProfile((prev) => ({
-      ...prev,
-      profileImage: url,
-    }));
+    try {
+      // update UI instantly
+      setProfile((prev) => ({
+        ...prev,
+        profileImage: url,
+      }));
 
-    // save to firestore
-    await updateDoc(doc(db, "trainers", user.uid), {
-      profileImageUrl: url,
-    });
-  } catch (error) {
-    console.error("Profile upload error:", error);
-  }
-};
+      // save to firestore
+      await updateDoc(doc(db, "trainers", user.uid), {
+        profileImageUrl: url,
+      });
+    } catch (error) {
+      console.error("Profile upload error:", error);
+    }
+  };
 
-const removeProfileImage = async () => {
-  try {
-    setProfile((prev) => ({
-      ...prev,
-      profileImage: "",
-    }));
+  const removeProfileImage = async () => {
+    try {
+      setProfile((prev) => ({
+        ...prev,
+        profileImage: "",
+      }));
 
-    await updateDoc(doc(db, "trainers", user.uid), {
-      profileImageUrl: "",
-    });
-  } catch (error) {
-    console.error("Error removing profile image:", error);
-  }
-};
+      await updateDoc(doc(db, "trainers", user.uid), {
+        profileImageUrl: "",
+      });
+    } catch (error) {
+      console.error("Error removing profile image:", error);
+    }
+  };
 
-const removeCustomerImage = async () => {
-  if (!editingStudent?.id) return;
+  const removeCustomerImage = async () => {
+    if (!editingStudent?.id) return;
 
-  try {
-    // update UI
-    setEditingStudent((prev) => ({
-      ...prev,
-      profileImageUrl: "",
-    }));
+    try {
+      // update UI
+      setEditingStudent((prev) => ({
+        ...prev,
+        profileImageUrl: "",
+      }));
 
-    // update firestore
-    await updateDoc(doc(db, "trainerstudents", editingStudent.id), {
-      profileImageUrl: "",
-    });
+      // update firestore
+      await updateDoc(doc(db, "trainerstudents", editingStudent.id), {
+        profileImageUrl: "",
+      });
 
-    // update table instantly
-    setStudents((prev) =>
-      prev.map((s) =>
-        s.id === editingStudent.id ? { ...s, profileImageUrl: "" } : s
-      )
-    );
-
-  } catch (error) {
-    console.error("Error removing image:", error);
-  }
-};
+      // update table instantly
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === editingStudent.id ? { ...s, profileImageUrl: "" } : s,
+        ),
+      );
+    } catch (error) {
+      console.error("Error removing image:", error);
+    }
+  };
 
   /* ================= UPLOAD MEDIA ================= */
   const handleUpload = async () => {
@@ -796,35 +795,35 @@ const removeCustomerImage = async () => {
   };
 
   const TIME_OPTIONS = generateTimes();
-const handleAadharUpload = async (e) => {
-  const files = Array.from(e.target.files);
-  if (!files.length || !editingStudent) return;
+  const handleAadharUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length || !editingStudent) return;
 
-  const urls = [];
+    const urls = [];
 
-  for (const file of files) {
-    const url = await uploadToCloudinary(file, "image");
-    if (url) urls.push(url);
-  }
+    for (const file of files) {
+      const url = await uploadToCloudinary(file, "image");
+      if (url) urls.push(url);
+    }
 
-  const updatedUrls = [...(editingStudent.aadharUrls || []), ...urls];
+    const updatedUrls = [...(editingStudent.aadharUrls || []), ...urls];
 
-  setEditingStudent({
-    ...editingStudent,
-    aadharUrls: updatedUrls,
-    aadharFilesCount: updatedUrls.length,
-  });
-};
+    setEditingStudent({
+      ...editingStudent,
+      aadharUrls: updatedUrls,
+      aadharFilesCount: updatedUrls.length,
+    });
+  };
 
-const removeAadharImage = (index) => {
-  const updated = editingStudent.aadharUrls.filter((_, i) => i !== index);
+  const removeAadharImage = (index) => {
+    const updated = editingStudent.aadharUrls.filter((_, i) => i !== index);
 
-  setEditingStudent({
-    ...editingStudent,
-    aadharUrls: updated,
-    aadharFilesCount: updated.length,
-  });
-};
+    setEditingStudent({
+      ...editingStudent,
+      aadharUrls: updated,
+      aadharFilesCount: updated.length,
+    });
+  };
 
   return (
     <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-6 bg-[#FAFAFA] min-h-screen">
@@ -935,18 +934,19 @@ const removeAadharImage = (index) => {
                     <label className="text-sm font-medium">Role*</label>
                     <input
                       value={editingTrainer.designation}
-                     onChange={(e) => {
-  let value = e.target.value.replace(/[^A-Za-z ]/g, "");
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/[^A-Za-z ]/g, "");
 
-  if (value.length > 0) {
-    value = value.charAt(0).toUpperCase() + value.slice(1);
-  }
+                        if (value.length > 0) {
+                          value =
+                            value.charAt(0).toUpperCase() + value.slice(1);
+                        }
 
-  setEditingTrainer({
-    ...editingTrainer,
-    designation: value,
-  });
-}}
+                        setEditingTrainer({
+                          ...editingTrainer,
+                          designation: value,
+                        });
+                      }}
                       className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
                   </div>
@@ -1141,9 +1141,9 @@ const removeAadharImage = (index) => {
                 <span className="text-orange-500 text-lg font-semibold">
                   {leftCount}
                 </span>
-<div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-black">
-  ↘
-</div>
+                <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-black">
+                  ↘
+                </div>
               </div>
             </div>
 
@@ -1195,12 +1195,12 @@ const removeAadharImage = (index) => {
 
               {/* SEARCH ICON */}
               <span className="absolute left-3 top-1/2 -translate-y-1/2">
-  <img
-    src="/search-icon.png"
-    alt="search"
-    className="w-4 h-4 object-contain opacity-60"
-  />
-</span>
+                <img
+                  src="/search-icon.png"
+                  alt="search"
+                  className="w-4 h-4 object-contain opacity-60"
+                />
+              </span>
             </div>
 
             {/* FILTER BUTTONS */}
@@ -1225,33 +1225,33 @@ const removeAadharImage = (index) => {
           {/* TABLE */}
           <div className="overflow-x-auto rounded-lg border">
             {/* TABLE HEADER */}
-<div
-  className={`grid ${
-    statusFilter === "Left"
-      ? "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1.2fr_1fr_1fr_100px]"
-      : "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1fr_1fr_100px]"
-  } bg-[#E9B489] text-black font-medium px-6 py-3 items-center`}
->
-  <p>Name</p>
-  <p>Age</p>
-  <p>Belt</p>
-  <p>Status</p>
-  {statusFilter === "Left" && <p>Reason</p>}
-  <p className="text-center">Added Date</p>
-  <p className="text-center">Left Date</p>
-  <p className="text-center">Action</p>
-</div>
+            <div
+              className={`grid ${
+                statusFilter === "Left"
+                  ? "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1.2fr_1fr_1fr_100px]"
+                  : "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1fr_1fr_100px]"
+              } bg-[#E9B489] text-black font-medium px-6 py-3 items-center`}
+            >
+              <p>Name</p>
+              <p>Age</p>
+              <p>Belt</p>
+              <p>Status</p>
+              {statusFilter === "Left" && <p>Reason</p>}
+              <p className="text-center">Added Date</p>
+              <p className="text-center">Left Date</p>
+              <p className="text-center">Action</p>
+            </div>
 
             {/* TABLE BODY */}
             {filteredStudents.map((student, index) => (
               <div
-  key={student.id}
-  className={`grid ${
-    statusFilter === "Left"
-      ? "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1.2fr_1fr_1fr_100px]"
-      : "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1fr_1fr_100px]"
-  } px-6 py-4 items-center border-t`}
->
+                key={student.id}
+                className={`grid ${
+                  statusFilter === "Left"
+                    ? "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1.2fr_1fr_1fr_100px]"
+                    : "grid-cols-[1.5fr_0.8fr_0.8fr_1fr_1fr_1fr_100px]"
+                } px-6 py-4 items-center border-t`}
+              >
                 <p className="flex items-center gap-1">
                   <span className="mr-2">{index + 1}.</span>
                   {student.firstName} {student.lastName}
@@ -1277,15 +1277,15 @@ const removeAadharImage = (index) => {
                   </p>
                 )}
 
-             <p className="flex justify-center">
-  {student.createdAt?.toDate?.().toLocaleDateString?.() || "-"}
-</p>
+                <p className="flex justify-center">
+                  {student.createdAt?.toDate?.().toLocaleDateString?.() || "-"}
+                </p>
 
-<p className="flex justify-center">
-  {student.leftDate?.toDate
-    ? student.leftDate.toDate().toLocaleDateString()
-    : "-"}
-</p>
+                <p className="flex justify-center">
+                  {student.leftDate?.toDate
+                    ? student.leftDate.toDate().toLocaleDateString()
+                    : "-"}
+                </p>
 
                 {/* ACTION BUTTON */}
                 <div className="flex items-center justify-center gap-3 h-full">
@@ -1460,7 +1460,7 @@ const removeAadharImage = (index) => {
                 {/* ================= PROFILE SECTION ================= */}
                 <div>
                   <h3 className="text-lg font-semibold text-orange-500 mb-4">
-                     Profile Information
+                    Profile Information
                   </h3>
 
                   <div className="flex flex-col sm:flex-row gap-6">
@@ -1478,28 +1478,26 @@ const removeAadharImage = (index) => {
                         </div>
                       )}
 
-<div className="flex flex-col items-center gap-2 mt-3">
+                      <div className="flex flex-col items-center gap-2 mt-3">
+                        <label className="cursor-pointer bg-orange-500 text-white px-3 py-1 rounded text-sm">
+                          Change Photo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleStudentProfileUpload}
+                          />
+                        </label>
 
-  <label className="cursor-pointer bg-orange-500 text-white px-3 py-1 rounded text-sm">
-    Change Photo
-    <input
-      type="file"
-      accept="image/*"
-      className="hidden"
-      onChange={handleStudentProfileUpload}
-    />
-  </label>
-
-  {editingStudent.profileImageUrl && (
-    <button
-      onClick={removeCustomerImage}
-      className="text-red-500 text-sm hover:underline"
-    >
-      Remove
-    </button>
-  )}
-
-</div>
+                        {editingStudent.profileImageUrl && (
+                          <button
+                            onClick={removeCustomerImage}
+                            className="text-red-500 text-sm hover:underline"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Basic Info */}
@@ -1511,19 +1509,23 @@ const removeAadharImage = (index) => {
                         <input
                           className="w-full border border-gray-300 rounded-lg px-3 py-2"
                           value={editingStudent.firstName || ""}
-                         onChange={(e) => {
-  let value = e.target.value.replace(/[^A-Za-z ]/g, "");
+                          onChange={(e) => {
+                            let value = e.target.value.replace(
+                              /[^A-Za-z ]/g,
+                              "",
+                            );
 
-  // ✅ Capitalize first letter
-  if (value.length > 0) {
-    value = value.charAt(0).toUpperCase() + value.slice(1);
-  }
+                            // ✅ Capitalize first letter
+                            if (value.length > 0) {
+                              value =
+                                value.charAt(0).toUpperCase() + value.slice(1);
+                            }
 
-  setEditingStudent({
-    ...editingStudent,
-    firstName: value,
-  });
-}}
+                            setEditingStudent({
+                              ...editingStudent,
+                              firstName: value,
+                            });
+                          }}
                         />
                       </div>
 
@@ -1534,19 +1536,23 @@ const removeAadharImage = (index) => {
                         <input
                           className="w-full border border-gray-300 rounded-lg px-3 py-2"
                           value={editingStudent.lastName || ""}
-                         onChange={(e) => {
-  let value = e.target.value.replace(/[^A-Za-z ]/g, "");
+                          onChange={(e) => {
+                            let value = e.target.value.replace(
+                              /[^A-Za-z ]/g,
+                              "",
+                            );
 
-  // ✅ Capitalize first letter
-  if (value.length > 0) {
-    value = value.charAt(0).toUpperCase() + value.slice(1);
-  }
+                            // ✅ Capitalize first letter
+                            if (value.length > 0) {
+                              value =
+                                value.charAt(0).toUpperCase() + value.slice(1);
+                            }
 
-  setEditingStudent({
-    ...editingStudent,
-    lastName: value,
-  });
-}}
+                            setEditingStudent({
+                              ...editingStudent,
+                              lastName: value,
+                            });
+                          }}
                         />
                       </div>
 
@@ -1622,7 +1628,7 @@ const removeAadharImage = (index) => {
 
                 {/* ================= TRAINING SECTION ================= */}
                 <h3 className="text-lg font-semibold text-orange-500 mb-4">
-                   Training Details
+                  Training Details
                 </h3>
 
                 {(editingStudent.sports || []).map((sport, index) => (
@@ -1690,33 +1696,60 @@ const removeAadharImage = (index) => {
                       </div>
 
                       {/* BELT */}
+                      {/* Belt / Skill Level */}
                       <div>
-                        <label className="text-sm font-medium">Belt</label>
-                       <div>
+                        <label className="text-sm font-medium">
+                          {sport.category === "Martial Arts"
+                            ? "Belt"
+                            : "Skill Level"}
+                        </label>
+                        <div>
+                          {sport.category === "Martial Arts" ? (
+                            // ✅ Martial Arts → Show Belt
+                            <select
+                              value={sport.belt || ""}
+                              onChange={(e) => {
+                                const updated = [...editingStudent.sports];
+                                updated[index].belt = e.target.value;
 
-<select
-  value={sport.belt || ""}
-  onChange={(e) => {
-    const updated = [...editingStudent.sports];
-    updated[index].belt = e.target.value;
+                                setEditingStudent({
+                                  ...editingStudent,
+                                  sports: updated,
+                                });
+                              }}
+                              className="w-full border rounded-lg px-3 py-2 focus:outline-none"
+                            >
+                              <option value="">Select Belt</option>
+                              <option value="White">White</option>
+                              <option value="Yellow">Yellow</option>
+                              <option value="Orange">Orange</option>
+                              <option value="Blue">Blue</option>
+                              <option value="Brown">Brown</option>
+                              <option value="Black">Black</option>
+                              <option value="Green">Green</option>
+                            </select>
+                          ) : (
+                            // ✅ Other Categories → Show Skill Level
+                            <select
+                              value={sport.skillLevel || ""}
+                              onChange={(e) => {
+                                const updated = [...editingStudent.sports];
+                                updated[index].skillLevel = e.target.value;
 
-    setEditingStudent({
-      ...editingStudent,
-      sports: updated,
-    });
-  }}
-  className="w-full border rounded-lg px-3 py-2 focus:outline-none"
->
-  <option value="">Select Belt</option>
-  <option value="White">White</option>
-  <option value="Yellow">Yellow</option>
-  <option value="Orange">Orange</option>
-  <option value="Blue">Blue</option>
-  <option value="Brown">Brown</option>
-  <option value="Black">Black</option>
-  <option value="Green">Green</option>
-</select>
-</div>
+                                setEditingStudent({
+                                  ...editingStudent,
+                                  sports: updated,
+                                });
+                              }}
+                              className="w-full border rounded-lg px-3 py-2 focus:outline-none"
+                            >
+                              <option value="">Select Skill Level</option>
+                              <option value="Beginner">Beginner</option>
+                              <option value="Intermediate">Intermediate</option>
+                              <option value="Advanced">Advanced</option>
+                            </select>
+                          )}
+                        </div>
                       </div>
 
                       {/* SESSION */}
@@ -1820,45 +1853,45 @@ const removeAadharImage = (index) => {
                   + Add Sport
                 </button>
                 {/* ================= AADHAAR SECTION ================= */}
-<div>
-  <h3 className="text-lg font-semibold text-orange-500 mb-4">
-     Aadhaar Documents
-  </h3>
+                <div>
+                  <h3 className="text-lg font-semibold text-orange-500 mb-4">
+                    Aadhaar Documents
+                  </h3>
 
-  <div className="flex flex-wrap gap-4 mb-3">
-    {(editingStudent.aadharUrls || []).map((url, i) => (
-      <div key={i} className="relative">
-        <img
-          src={url}
-          className="w-24 h-24 object-cover rounded-lg border shadow"
-        />
+                  <div className="flex flex-wrap gap-4 mb-3">
+                    {(editingStudent.aadharUrls || []).map((url, i) => (
+                      <div key={i} className="relative">
+                        <img
+                          src={url}
+                          className="w-24 h-24 object-cover rounded-lg border shadow"
+                        />
 
-        <button
-          onClick={() => removeAadharImage(i)}
-          className="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded"
-        >
-          ✕
-        </button>
-      </div>
-    ))}
-  </div>
+                        <button
+                          onClick={() => removeAadharImage(i)}
+                          className="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
 
-  {/* Upload */}
-  <label className="cursor-pointer bg-orange-500 text-white px-4 py-2 rounded-md text-sm">
-    + Add Aadhaar
-    <input
-      type="file"
-      accept="image/*"
-      multiple
-      className="hidden"
-      onChange={handleAadharUpload}
-    />
-  </label>
+                  {/* Upload */}
+                  <label className="cursor-pointer bg-orange-500 text-white px-4 py-2 rounded-md text-sm">
+                    + Add Aadhaar
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleAadharUpload}
+                    />
+                  </label>
 
-  <p className="text-sm text-gray-500 mt-2">
-    Total Files: {editingStudent.aadharFilesCount || 0}
-  </p>
-</div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Total Files: {editingStudent.aadharFilesCount || 0}
+                  </p>
+                </div>
               </div>
 
               {/* FOOTER */}

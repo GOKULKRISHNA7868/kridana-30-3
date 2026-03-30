@@ -49,7 +49,7 @@ const PaymentOverview = () => {
   const API_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:5000"
-      : "https://kridana-razorpay-backend.onrender.cm";
+      : "https://kridana-razorpay-backend.onrender.com";
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (!u) {
