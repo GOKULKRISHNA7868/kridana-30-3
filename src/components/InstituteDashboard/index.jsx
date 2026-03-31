@@ -75,7 +75,7 @@ const sidebarSections = [
   {
     title: "Operations",
     icon: "operations",
-    items: ["Time Table", "Add Events", "Chat Box"],
+    items: ["Time Table", "Add Events", "Chat Box", "Analytics"],
   },
   {
     title: "Account",
@@ -150,13 +150,11 @@ const InstituteDashboard = () => {
         return {
           uid: doc.id,
           ...raw,
-
-          // ✅ keep category fallback logic
           batch: raw.batch || raw.category || "",
-
           createdAt: raw.createdAt
             ? raw.createdAt.toDate().toISOString().split("T")[0]
             : null,
+          joiningDate: raw.joiningDate || null,
         };
       });
 
@@ -178,6 +176,7 @@ const InstituteDashboard = () => {
         createdAt: doc.data().createdAt
           ? doc.data().createdAt.toDate().toISOString().split("T")[0]
           : null,
+        joiningDate: doc.data().joiningDate || null,
       }));
 
       setTrainers(data);
@@ -269,13 +268,13 @@ const InstituteDashboard = () => {
         return <PaidRecipet />;
       case "Payment & Subscription":
         return <PaymentsSubscriptionPage />;
-     case "Complaint History":
-  return (
-    <ComplaintHistory
-      ticketId={selectedTicket}
-      setActiveMenu={setActiveMenu}
-    />
-  );
+      case "Complaint History":
+        return (
+          <ComplaintHistory
+            ticketId={selectedTicket}
+            setActiveMenu={setActiveMenu}
+          />
+        );
       default:
         return (
           <div className="text-black">
@@ -377,16 +376,16 @@ const InstituteDashboard = () => {
           {sidebarSections.map((section) => (
             <div key={section.title}>
               {/* MAIN MENU */}
-            <button
-  onClick={() => {
-    if (section.title === "Dashboard") {
-      setActiveMenu("Dashboard"); // ✅ THIS IS REQUIRED
-    } else {
-      toggleMenu(section.title);
-    }
-  }}
-  className="w-full flex items-center justify-between px-4 py-2 text-white hover:bg-gray-800 rounded-lg"
->
+              <button
+                onClick={() => {
+                  if (section.title === "Dashboard") {
+                    setActiveMenu("Dashboard"); // ✅ THIS IS REQUIRED
+                  } else {
+                    toggleMenu(section.title);
+                  }
+                }}
+                className="w-full flex items-center justify-between px-4 py-2 text-white hover:bg-gray-800 rounded-lg"
+              >
                 <div className="flex items-center gap-3">
                   {getIcon(section.icon)}
                   {section.title}

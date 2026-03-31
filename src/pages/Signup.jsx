@@ -22,7 +22,20 @@ export default function Signup() {
   const [agreed, setAgreed] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let newValue = value;
+
+    // ✅ Name → only alphabets + capitalize
+    if (name === "name") {
+      newValue = value
+        .replace(/[^A-Za-z ]/g, "") // only letters
+        .replace(/\b[a-z]/g, (c) => c.toUpperCase()); // capitalize
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
   };
 
   const handleSubmit = async (e) => {

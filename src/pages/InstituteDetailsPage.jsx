@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import {
   doc,
   getDoc,
@@ -29,6 +30,7 @@ import {
 import { motion } from "framer-motion";
 
 export default function InstituteDetailsPage() {
+  const [feedbacks, setFeedbacks] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
   const [inst, setInst] = useState(null);
@@ -44,6 +46,25 @@ export default function InstituteDetailsPage() {
       }
     };
     load();
+  }, [id]);
+  useEffect(() => {
+    const loadFeedbacks = async () => {
+      const q = query(
+        collection(db, "feedbacks"),
+        where("instituteId", "==", id),
+      );
+
+      const snap = await getDocs(q);
+
+      const data = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setFeedbacks(data);
+    };
+
+    loadFeedbacks();
   }, [id]);
   const startInstituteChat = async () => {
     const user = auth.currentUser;
@@ -155,17 +176,14 @@ export default function InstituteDetailsPage() {
               Book a Slot
             </button>
 
-            {inst.email && inst.email.includes("@") && (
-              <a
-                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${inst.email.trim()}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-outline"
-              >
-                <img src="/email-icon.png" className="w-4 h-4" alt="email" />
-                Email
-              </a>
-            )}
+            <a
+              href={`tel:${inst.phoneNumber}`}
+              className="border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold flex items-center gap-2"
+            >
+              <Phone size={16} />
+              Call Now
+            </a>
+
             {auth.currentUser && (
               <button
                 onClick={() => startInstituteChat()}
@@ -174,13 +192,15 @@ export default function InstituteDetailsPage() {
                 Chat Now
               </button>
             )}
-            <a
-              href={`tel:${inst.phoneNumber}`}
-              className="border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold flex items-center gap-2"
+            <button
+              onClick={() => {
+                localStorage.setItem("instituteId", inst.id); // ✅ save id
+                navigate("/feedback"); // ✅ open feedback page
+              }}
+              className="border border-orange-500 text-orange-600 px-5 py-2 rounded-lg font-semibold"
             >
-              <Phone size={16} />
-              Call Now
-            </a>
+              Give Feedback
+            </button>
           </div>
         </div>
 
@@ -364,40 +384,39 @@ export default function InstituteDetailsPage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="bg-white border border-orange-300 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
-              >
-                {/* Profile + Name */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-full bg-gray-300"></div>
+            {feedbacks.length === 0 ? (
+              <p className="text-gray-500">No reviews yet</p>
+            ) : (
+              feedbacks.map((fb) => (
+                <div
+                  key={fb.id}
+                  className="bg-white border border-orange-300 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
+                >
+                  {/* Profile + Name */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-full bg-gray-300"></div>
 
-                  <div>
-                    <h3 className="font-bold text-lg">Customer Name</h3>
-                    <p className="text-sm text-gray-500">
-                      Karate, Gym, Swimming
-                    </p>
+                    <div>
+                      <h3 className="font-bold text-lg">{fb.name}</h3>
+                      <p className="text-sm text-gray-500">Feedback User</p>
+                    </div>
+                  </div>
+
+                  {/* Review Text */}
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {fb.message}
+                  </p>
+
+                  {/* Bottom */}
+                  <div className="mt-5 flex items-center justify-between text-xs text-gray-500 border-t pt-3">
+                    <span className="bg-orange-100 text-orange-600 px-2 py-1 rounded-md font-semibold">
+                      ⭐ 5.0
+                    </span>
+                    <span>Just Now</span>
                   </div>
                 </div>
-
-                {/* Review Text */}
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Great experience overall! The facilities are well-maintained,
-                  and the coaches are really supportive and knowledgeable.
-                  Booking slots was smooth and hassle-free, and the staff was
-                  friendly and helpful throughout.
-                </p>
-
-                {/* Bottom Rating */}
-                <div className="mt-5 flex items-center justify-between text-xs text-gray-500 border-t pt-3">
-                  <span className="bg-orange-100 text-orange-600 px-2 py-1 rounded-md font-semibold">
-                    ⭐ 4.5
-                  </span>
-                  <span>Excellent • 02 Weeks Ago • 1.2k found helpful</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -65,7 +65,7 @@ const trainerStudentSidebarItems = [
   "Fee Details",
 ];
 
-const otherUserSidebarItems = ["My Account", "Log Out"];
+const otherUserSidebarItems = ["My Account"];
 const SettingsItems = ["Customer Policy", "Privacy Policy", "Logout"];
 /* ============================= 
    WELCOME SCREEN

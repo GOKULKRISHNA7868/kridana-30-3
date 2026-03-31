@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const Feedback = () => {
   const [form, setForm] = useState({
     name: "",
-    phone: "",
-    summary: "",
     message: "",
   });
-
+  const instituteId = localStorage.getItem("instituteId");
+  const navigate = useNavigate(); // ✅ ADD EXACTLY HERE
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -19,15 +19,15 @@ const Feedback = () => {
     const { name, value } = e.target;
 
     // Full name: allow only letters and spaces
-if (name === "name") {
-  let filtered = value
-    .replace(/[^A-Za-z.\s]/g, "") // ✅ allow dot
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase()); // capitalize words
+    if (name === "name") {
+      let filtered = value
+        .replace(/[^A-Za-z.\s]/g, "") // ✅ allow dot
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase()); // capitalize words
 
-  setForm((prev) => ({ ...prev, name: filtered }));
-  return;
-}
+      setForm((prev) => ({ ...prev, name: filtered }));
+      return;
+    }
 
     // Phone: allow only digits and max 10
     if (name === "phone") {
@@ -47,13 +47,8 @@ if (name === "name") {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.phone || !form.summary) {
-      alert("Please fill required fields");
-      return;
-    }
-
-    if (form.phone.length !== 10) {
-      alert("Contact number must be exactly 10 digits");
+    if (!instituteId) {
+      alert("Please open feedback from institute page");
       return;
     }
 
@@ -61,25 +56,25 @@ if (name === "name") {
       setLoading(true);
 
       await addDoc(collection(db, "feedbacks"), {
-        ...form,
+        name: form.name,
+        message: form.message,
+        instituteId: instituteId, // ✅ FIXED
         createdAt: serverTimestamp(),
       });
+      // ✅ SHOW SUCCESS MESSAGE
+      alert("Feedback submitted successfully");
+
+      // ✅ AUTO REDIRECT (NO BUTTON)
 
       setSuccess(true);
 
       setForm({
         name: "",
-        phone: "",
-        summary: "",
         message: "",
       });
-
-      setTimeout(() => {
-        setSuccess(false);
-      }, 4000);
     } catch (error) {
-      console.error("Feedback error:", error);
-      alert("Something went wrong. Try again.");
+      console.error("REAL ERROR:", error);
+      alert(error.message);
     }
 
     setLoading(false);
@@ -101,69 +96,35 @@ if (name === "name") {
         <div className="bg-white rounded-xl p-6 md:p-10 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* NAME + PHONE */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* FULL NAME */}
-              <div>
-                <label className="font-medium text-sm">Full Name*</label>
-
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Enter your name"
-                  className="w-full mt-2 border border-orange-400 rounded-lg px-4 py-2 
-                  focus:outline-none focus:ring-1 focus:ring-orange-400"
-                />
-              </div>
-
-              {/* CONTACT */}
-              <div>
-                <label className="font-medium text-sm">Contact Number*</label>
-
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder="10 digit number"
-                  maxLength={10}
-                  className="w-full mt-2 border border-orange-400 rounded-lg px-4 py-2 
-                  focus:outline-none focus:ring-1 focus:ring-orange-400"
-                />
-              </div>
-            </div>
-
-            {/* SUMMARY */}
+            {/* FULL NAME */}
             <div>
-              <label className="font-medium text-sm">Feedback Summary*</label>
+              <label className="font-medium text-sm">Full Name*</label>
 
               <input
                 type="text"
-                name="summary"
+                name="name"
                 required
-                value={form.summary}
+                value={form.name}
                 onChange={handleChange}
-                className="w-full mt-2 border border-orange-400 rounded-lg px-4 py-2 
-                focus:outline-none focus:ring-1 focus:ring-orange-400"
+                className="w-full mt-2 border border-orange-400 rounded-lg px-4 py-3 
+    focus:outline-none focus:ring-1 focus:ring-orange-400"
               />
             </div>
 
-            {/* MESSAGE */}
+            {/* EXPERIENCE MESSAGE */}
             <div>
               <label className="font-medium text-sm">
-                Detailed Feedback / Message
+                How would you describe your training experience at the
+                institute?
               </label>
 
               <textarea
-                rows="5"
+                rows="6"
                 name="message"
                 value={form.message}
                 onChange={handleChange}
-                className="w-full mt-2 border border-orange-400 rounded-lg px-4 py-2 resize-none
-                focus:outline-none focus:ring-1 focus:ring-orange-400"
+                className="w-full mt-2 border border-orange-400 rounded-lg px-4 py-3 resize-none
+    focus:outline-none focus:ring-1 focus:ring-orange-400"
               />
             </div>
 
@@ -177,26 +138,6 @@ if (name === "name") {
                 {loading ? "Submitting..." : "Submit Feedback"}
               </button>
             </div>
-            {success && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm text-center shadow-lg">
-                  <h2 className="text-xl font-semibold text-green-600 mb-3">
-                    Feedback Submitted
-                  </h2>
-
-                  <p className="text-gray-700 mb-5">
-                    Thank you for sharing your feedback with us.
-                  </p>
-
-                  <button
-                    onClick={() => setSuccess(false)}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
-                  >
-                    OK
-                  </button>
-                </div>
-              </div>
-            )}
           </form>
         </div>
       </div>

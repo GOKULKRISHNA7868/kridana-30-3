@@ -31,6 +31,15 @@ const Landing = () => {
   const [trainers, setTrainers] = useState([]);
   const [institutes, setInstitutes] = useState([]);
   const [reels, setReels] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const [showReelViewer, setShowReelViewer] = useState(false);
+  const [activeReelIndex, setActiveReelIndex] = useState(0);
+  const slides = [
+    "/images/slide1.jpg",
+    "/images/slide2.jpg",
+    "/images/slide3.jpg",
+  ];
   const [userLocation, setUserLocation] = useState(null);
 
   /* ================= AUTH ================= */
@@ -55,30 +64,60 @@ const Landing = () => {
 
   /* ================= FETCH TRAINERS + INSTITUTES ================= */
 
+  /* ================= FETCH REELS ================= */
+  /* ================= ✅ FETCH REELS FROM TRAINERS + INSTITUTES ================= */
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchReels = async () => {
       const trainerSnap = await getDocs(collection(db, "trainers"));
       const instituteSnap = await getDocs(collection(db, "institutes"));
 
-      setTrainers(
-        trainerSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })),
-      );
+      let all = []; // ✅ correct variable
 
-      setInstitutes(
-        instituteSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })),
-      );
+      // ✅ TRAINERS
+      trainerSnap.docs.forEach((doc) => {
+        const data = doc.data();
+
+        if (data.reels && Array.isArray(data.reels)) {
+          data.reels.forEach((video, index) => {
+            // ✅ index added
+            all.push({
+              reelId: `trainer_${doc.id}_${index}`, // ✅ correct
+              videoUrl: video,
+              ownerId: doc.id,
+              type: "trainer",
+              title: data.trainerName || "Trainer Reel",
+            });
+          });
+        }
+      });
+
+      // ✅ INSTITUTES
+      instituteSnap.docs.forEach((doc) => {
+        const data = doc.data();
+
+        if (data.reels && Array.isArray(data.reels)) {
+          data.reels.forEach((video, index) => {
+            // ✅ index added
+            all.push({
+              reelId: `institute_${doc.id}_${index}`, // ✅ correct
+              videoUrl: video,
+              ownerId: doc.id,
+              type: "institute",
+              title: data.instituteName || "Institute Reel",
+            });
+          });
+        }
+      });
+
+      // ✅ Shuffle
+      all = all.sort(() => Math.random() - 0.5);
+
+      // ✅ Limit
+      setReels(all.slice(0, 5));
     };
 
-    fetchData();
+    fetchReels();
   }, []);
-
-  /* ================= FETCH REELS ================= */
 
   useEffect(() => {
     const fetchReels = async () => {
@@ -92,8 +131,10 @@ const Landing = () => {
         if (data.reels) {
           data.reels.forEach((video) => {
             all.push({
-              id: doc.id,
+              reelId: `trainer_${doc.id}_${index}`,
               videoUrl: video,
+              ownerId: doc.id, // ✅ REQUIRED
+              type: "trainer",
               title: data.trainerName || "Trainer Reel",
             });
           });
@@ -105,8 +146,10 @@ const Landing = () => {
         if (data.reels) {
           data.reels.forEach((video) => {
             all.push({
-              id: doc.id,
+              reelId: `institute_${doc.id}_${index}`,
               videoUrl: video,
+              ownerId: doc.id, // ✅ REQUIRED
+              type: "institute",
               title: data.instituteName || "Institute Reel",
             });
           });
@@ -119,7 +162,13 @@ const Landing = () => {
 
     fetchReels();
   }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 3000); // 3 seconds
 
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="w-full font-sans">
       {/* 3px white line */}
@@ -128,54 +177,18 @@ const Landing = () => {
       {/* ================================================= */}
       {/* ================= HERO SECTION =================== */}
       {/* ================================================= */}
-      <section className="bg-black text-white px-6 md:px-20 h-[65vh] flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden">
-        {/* TEXT SECTION */}
-        <div className="w-full md:w-3/5">
-          <h1 className="text-4xl md:text-5xl font-bold leading-[1.35] md:leading-[1.3]">
-            Connecting Trainers, Institutes & Learners Through Sports & Growth
-          </h1>
-
-          <p className="mt-6 text-gray-300 text-lg max-w-lg">
-            Empowering Sports Institutes & Trainers to Manage, Grow & Succeed.
-          </p>
-
-          <div className="mt-8 grid grid-cols-2 gap-6 max-w-2xl">
-            <button className="border border-orange-500 px-6 py-3 rounded-md text-orange-500">
-              Manage & Engage Seamlessly
-            </button>
-
-            <button className="border border-orange-500 px-6 py-3 rounded-md text-orange-500">
-              Grow & Scale Your Business
-            </button>
-
-            <button className="col-span-2 justify-self-center border border-orange-500 px-6 py-3 rounded-md text-orange-500">
-              Create & Showcase Your Profile
-            </button>
-          </div>
-        </div>
-
-        {/* IMAGE SECTION */}
-        <div className="w-full md:w-2/5 relative flex justify-center items-end">
-          {/* Orange Circle */}
-          <div
-            className="absolute 
-      w-[200px] h-[200px] 
-      md:w-[340px] md:h-[340px] 
-      bg-orange-500 
-      rounded-full 
-      right-4"
-          ></div>
-
-          <img
-            src="/images/hero.png"
-            alt="Hero"
-            className="relative z-10 
-    h-[60vh] 
-    md:h-[80vh] 
-    w-auto 
-    object-contain
-    translate-y-8 md:translate-y-12"
-          />
+      <section className="w-full bg-white">
+        <div className="relative w-full max-w-[1440px] h-[500px] mx-auto overflow-hidden">
+          {slides.map((img, index) => (
+            <img
+              key={index}
+              src={img}
+              alt="slide"
+              className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${
+                index === currentSlide ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
         </div>
       </section>
 
@@ -283,16 +296,6 @@ const Landing = () => {
 
       {/* ================= ADS SECTION ================= */}
 
-      <section className="py-6">
-        <div className="max-w-5xl mx-auto px-6">
-          <img
-            src="/images/ad-banner.jpg"
-            alt="Advertisement"
-            className="w-full h-auto"
-          />
-        </div>
-      </section>
-
       {/* ================================================= */}
       {/* ================= TOP TRAINERS =================== */}
       {/* ================================================= */}
@@ -306,10 +309,11 @@ const Landing = () => {
           <div className="flex gap-3">
             <button
               onClick={() => setMode("top")}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${mode === "top"
+              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                mode === "top"
                   ? "bg-orange-500 text-white"
                   : "border border-orange-500 text-orange-500"
-                }`}
+              }`}
             >
               <svg
                 className="w-4 h-4 text-yellow-400"
@@ -323,12 +327,17 @@ const Landing = () => {
 
             <button
               onClick={() => setMode("nearby")}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${mode === "nearby"
+              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                mode === "nearby"
                   ? "bg-orange-500 text-white"
                   : "border border-orange-500 text-orange-500"
-                }`}
+              }`}
             >
-              <img src="/location-icon.png" className="w-4 h-4" alt="location" />
+              <img
+                src="/location-icon.png"
+                className="w-4 h-4"
+                alt="location"
+              />
               Near Me
             </button>
           </div>
@@ -338,27 +347,27 @@ const Landing = () => {
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
           {(mode === "top"
             ? [...trainers].sort(
-              (a, b) => Number(b.rating || 0) - Number(a.rating || 0),
-            )
+                (a, b) => Number(b.rating || 0) - Number(a.rating || 0),
+              )
             : userLocation
               ? trainers
-                .filter(
-                  (t) =>
-                    t.latitude !== undefined &&
-                    t.longitude !== undefined &&
-                    t.latitude !== null &&
-                    t.longitude !== null,
-                )
-                .map((t) => ({
-                  ...t,
-                  distance: getDistance(
-                    userLocation.lat,
-                    userLocation.lng,
-                    Number(t.latitude),
-                    Number(t.longitude),
-                  ),
-                }))
-                .sort((a, b) => a.distance - b.distance)
+                  .filter(
+                    (t) =>
+                      t.latitude !== undefined &&
+                      t.longitude !== undefined &&
+                      t.latitude !== null &&
+                      t.longitude !== null,
+                  )
+                  .map((t) => ({
+                    ...t,
+                    distance: getDistance(
+                      userLocation.lat,
+                      userLocation.lng,
+                      Number(t.latitude),
+                      Number(t.longitude),
+                    ),
+                  }))
+                  .sort((a, b) => a.distance - b.distance)
               : []
           )
             .slice(0, 3)
@@ -444,10 +453,11 @@ const Landing = () => {
           <div className="flex gap-3">
             <button
               onClick={() => setInstituteMode("top")}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${instituteMode === "top"
+              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                instituteMode === "top"
                   ? "bg-orange-500 text-white"
                   : "border border-orange-500 text-orange-500"
-                }`}
+              }`}
             >
               <svg
                 className="w-4 h-4 text-yellow-400"
@@ -461,12 +471,17 @@ const Landing = () => {
 
             <button
               onClick={() => setInstituteMode("nearby")}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${instituteMode === "nearby"
+              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                instituteMode === "nearby"
                   ? "bg-orange-500 text-white"
                   : "border border-orange-500 text-orange-500"
-                }`}
+              }`}
             >
-              <img src="/location-icon.png" className="w-4 h-4" alt="location" />
+              <img
+                src="/location-icon.png"
+                className="w-4 h-4"
+                alt="location"
+              />
               Near Me
             </button>
           </div>
@@ -476,27 +491,27 @@ const Landing = () => {
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
           {(instituteMode === "top"
             ? [...institutes].sort(
-              (a, b) => Number(b.rating || 0) - Number(a.rating || 0),
-            )
+                (a, b) => Number(b.rating || 0) - Number(a.rating || 0),
+              )
             : userLocation
               ? institutes
-                .filter(
-                  (i) =>
-                    i.latitude !== undefined &&
-                    i.longitude !== undefined &&
-                    i.latitude !== null &&
-                    i.longitude !== null,
-                )
-                .map((i) => ({
-                  ...i,
-                  distance: getDistance(
-                    userLocation.lat,
-                    userLocation.lng,
-                    Number(i.latitude),
-                    Number(i.longitude),
-                  ),
-                }))
-                .sort((a, b) => a.distance - b.distance)
+                  .filter(
+                    (i) =>
+                      i.latitude !== undefined &&
+                      i.longitude !== undefined &&
+                      i.latitude !== null &&
+                      i.longitude !== null,
+                  )
+                  .map((i) => ({
+                    ...i,
+                    distance: getDistance(
+                      userLocation.lat,
+                      userLocation.lng,
+                      Number(i.latitude),
+                      Number(i.longitude),
+                    ),
+                  }))
+                  .sort((a, b) => a.distance - b.distance)
               : []
           )
             .slice(0, 3)
@@ -573,6 +588,43 @@ const Landing = () => {
           >
             See More
           </button>
+        </div>
+      </section>
+      {/* ================= FULLSCREEN REEL VIEWER ================= */}
+      <section className="py-14 px-6 md:px-16 bg-gray-50">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-semibold">
+            Trending Reels & Training Videos 🎥
+          </h2>
+        </div>
+
+        <div className="flex gap-6 overflow-x-auto scrollbar-hide">
+          {reels.slice(0, 3).map((r, index) => (
+            <motion.div
+              key={r.reelId}
+              whileHover={{ scale: 1.05 }}
+              onClick={() => {
+                navigate(`/reels/${index}`, {
+                  state: {
+                    reels: reels, // ✅ send full list
+                  },
+                });
+              }}
+              className="min-w-[230px] h-[420px] rounded-3xl overflow-hidden shadow-xl cursor-pointer bg-black relative"
+            >
+              <video
+                src={r.videoUrl}
+                className="w-full h-full object-cover"
+                muted
+              />
+
+              <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
+                <p className="text-white font-semibold text-sm">
+                  {r.title || "Training Reel"}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
       {/* ================================================= */}

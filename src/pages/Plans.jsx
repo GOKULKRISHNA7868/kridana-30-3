@@ -119,6 +119,10 @@ export default function Plans() {
         Start for free, pick a plan later. Ready to be part of the future
       </p>
 
+      <p className="text-lg font-semibold text-lime-500">
+        Limited Offer (First 1000 Businesses Only)
+      </p>
+
       {/* Toggle */}
       <div className="flex border rounded-full mb-10 overflow-hidden">
         <button
@@ -142,7 +146,7 @@ export default function Plans() {
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full px-6">
         {/* FREE */}
-       <div className="bg-gray-900 text-white rounded-xl p-8 relative flex flex-col justify-between">
+        <div className="bg-gray-900 text-white rounded-xl p-8 relative flex flex-col justify-between">
           <h2 className="text-xl font-bold mb-2">₹ 0/-</h2>
           <p className="text-lime-400 font-semibold mb-4">FREE (1 Month)</p>
 
@@ -162,21 +166,22 @@ export default function Plans() {
         </div>
 
         {/* TRAINER */}
-      <div className="bg-gray-900 text-white rounded-xl p-8 relative flex flex-col justify-between">
+        <div className="bg-gray-900 text-white rounded-xl p-8 relative flex flex-col justify-between">
           <span className="absolute top-3 right-3 bg-lime-400 text-black text-xs px-2 py-1 rounded">
             20% OFF
           </span>
 
           <h2 className="text-xl font-bold mb-2">
-            {billing === "monthly" ? "₹ 299/-" : "₹ 4,790 / Year"}
+            {billing === "monthly" ? "₹ 199/-" : "₹ 4,790 / Year"}
           </h2>
           <p className="text-lime-400 font-semibold mb-4">Trainer’s Plan</p>
 
           <ul className="space-y-2 text-sm">
-            <li>✔ Attendance Tracking</li>
-            <li>✔ Fees Payment Tracking</li>
-            <li>✔ Reports Generator</li>
-            <li>✔ 01 Free Ad Per Year</li>
+            <li>✔ 24×7 Advertising</li>
+            <li>✔ Fee Collection & Alerts</li>
+            <li>✔ Customer Attendance Tracking</li>
+            <li>✔ Performance Tracking</li>
+            <li>✔ Revenue Tracking</li>
           </ul>
 
           <button
@@ -193,22 +198,25 @@ export default function Plans() {
         </div>
 
         {/* INSTITUTE */}
-      <div className="bg-gray-900 text-white rounded-xl p-8 relative flex flex-col justify-between">
+        <div className="bg-gray-900 text-white rounded-xl p-8 relative flex flex-col justify-between">
           <span className="absolute top-3 right-3 bg-lime-400 text-black text-xs px-2 py-1 rounded">
             20% OFF
           </span>
 
           <h2 className="text-xl font-bold mb-2">
-            {billing === "monthly" ? "₹ 999/-" : "₹ 9,590 / Year"}
+            {billing === "monthly" ? "₹ 499/-" : "₹ 9,590 / Year"}
           </h2>
           <p className="text-lime-400 font-semibold mb-4">Institutes Plan</p>
 
           <ul className="space-y-2 text-sm">
-            <li>✔ Trainers Management Attendance</li>
-            <li>✔ Institute Workforce Attendance</li>
-            <li>✔ Salary Tracking</li>
-            <li>✔ Reports</li>
-            <li>✔ 03 Ads Free Per Year</li>
+            <li>✔ 24×7 Advertising (Enhanced)</li>
+            <li>✔ Fee Collection & Alerts</li>
+            <li>✔ Customer Attendance Tracking</li>
+            <li>✔ Performance Tracking (Advanced)</li>
+            <li>✔ Revenue Tracking (Advanced)</li>
+            <li>✔ Salary Management</li>
+            <li>✔ Staff Attendance</li>
+            <li>✔ Bookings</li>
           </ul>
 
           <button

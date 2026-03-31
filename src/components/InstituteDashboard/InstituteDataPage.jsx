@@ -14,7 +14,7 @@ const InstituteDataPage = ({
   setShowNotifications,
   onDeleteStudent,
   onDeleteTrainer,
-  openComplaints
+  openComplaints,
 }) => {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [activeType, setActiveType] = useState("students");
@@ -46,16 +46,18 @@ const InstituteDataPage = ({
           .trim();
 
         const matchesSearch = fullName.includes(search.toLowerCase());
-        const matchesDate = !selectedDate || s.createdAt === selectedDate;
+        const studentDate = s.createdAt || s.joiningDate;
 
+        const matchesDate =
+          !selectedDate || (s.joiningDate && s.joiningDate === selectedDate);
         return matchesSearch && matchesDate;
       })
       .sort((a, b) =>
         `${a.firstName || ""} ${a.lastName || ""}`
           .toLowerCase()
           .localeCompare(
-            `${b.firstName || ""} ${b.lastName || ""}`.toLowerCase()
-          )
+            `${b.firstName || ""} ${b.lastName || ""}`.toLowerCase(),
+          ),
       );
   }, [students, search, selectedDate]);
   useEffect(() => {
@@ -84,7 +86,8 @@ const InstituteDataPage = ({
           .trim();
 
         const matchesSearch = fullName.includes(search.toLowerCase());
-        const matchesDate = !selectedDate || t.createdAt === selectedDate;
+        const matchesDate =
+          !selectedDate || (t.joiningDate && t.joiningDate === selectedDate);
 
         return matchesSearch && matchesDate;
       })
@@ -92,8 +95,8 @@ const InstituteDataPage = ({
         `${a.firstName || ""} ${a.lastName || ""}`
           .toLowerCase()
           .localeCompare(
-            `${b.firstName || ""} ${b.lastName || ""}`.toLowerCase()
-          )
+            `${b.firstName || ""} ${b.lastName || ""}`.toLowerCase(),
+          ),
       );
   }, [trainers, search, selectedDate]);
 
@@ -130,11 +133,7 @@ const InstituteDataPage = ({
       {/* Search + icons */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center bg-gray-100 border border-gray-300 rounded-full px-5 py-2 w-full max-w-md">
-          <img
-            src="/search-icon.png"
-            alt="search"
-            className="w-4 h-4 mr-2"
-          />
+          <img src="/search-icon.png" alt="search" className="w-4 h-4 mr-2" />
           <input
             type="text"
             placeholder="Search by name..."
@@ -175,14 +174,15 @@ const InstituteDataPage = ({
                 ref={notificationRef}
                 className="absolute right-0 mt-4 w-80 bg-white border shadow-lg rounded-lg z-50"
               >
-
                 <div className="p-3 border-b font-semibold text-black">
                   Support Tickets
                 </div>
 
                 <div className="max-h-60 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <p className="p-3 text-gray-500 text-sm">No notifications</p>
+                    <p className="p-3 text-gray-500 text-sm">
+                      No notifications
+                    </p>
                   ) : (
                     notifications.map((item) => (
                       <div
@@ -200,7 +200,6 @@ const InstituteDataPage = ({
                     ))
                   )}
                 </div>
-
               </div>
             )}
           </div>
@@ -324,12 +323,12 @@ const InstituteStudentsTable = ({ rows, onDelete }) => {
         prev.map((r) =>
           r.uid === row.uid
             ? {
-              ...r,
-              firstName: firstName || "",
-              lastName: lastName || "",
-              batch: draft.batch,
-              phone: draft.phone,
-            }
+                ...r,
+                firstName: firstName || "",
+                lastName: lastName || "",
+                batch: draft.batch,
+                phone: draft.phone,
+              }
             : r,
         ),
       );
@@ -457,12 +456,12 @@ const InstituteTrainersTable = ({ rows, onDelete }) => {
         prev.map((r) =>
           r.trainerUid === row.trainerUid
             ? {
-              ...r,
-              firstName: firstName || "",
-              lastName: lastName || "",
-              category: draft.category,
-              phone: draft.phone,
-            }
+                ...r,
+                firstName: firstName || "",
+                lastName: lastName || "",
+                category: draft.category,
+                phone: draft.phone,
+              }
             : r,
         ),
       );

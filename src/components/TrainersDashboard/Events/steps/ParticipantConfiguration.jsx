@@ -201,10 +201,11 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
                     }
                   }}
                   className={`px-4 py-2 rounded-md border text-sm transition
-        ${formData?.participants?.ageGroup?.includes(age)
-                      ? "bg-orange-500 text-white border-orange-500"
-                      : "border-orange-400 text-gray-700 hover:bg-orange-50"
-                    }`}
+        ${
+          formData?.participants?.ageGroup?.includes(age)
+            ? "bg-orange-500 text-white border-orange-500"
+            : "border-orange-400 text-gray-700 hover:bg-orange-50"
+        }`}
                 >
                   {age}
                 </button>
@@ -246,7 +247,7 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-2">
-              Upload required Documents*
+              Upload Required Documents*
             </label>
 
             <div className="border border-orange-300 rounded-lg h-10 flex items-center justify-between px-3">
@@ -319,8 +320,8 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
               {[...students]
                 .sort((a, b) =>
                   `${a.firstName} ${a.lastName}`.localeCompare(
-                    `${b.firstName} ${b.lastName}`
-                  )
+                    `${b.firstName} ${b.lastName}`,
+                  ),
                 )
                 .map((student) => (
                   <option
@@ -350,8 +351,9 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
 
                 <ChevronDown
                   size={18}
-                  className={`ml-2 transition-transform ${showCategoryDropdown ? "rotate-180" : ""
-                    }`}
+                  className={`ml-2 transition-transform ${
+                    showCategoryDropdown ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
@@ -412,7 +414,7 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
 
                   // ✅ Capitalize each word
                   value = value.replace(/\b[a-z]/g, (char) =>
-                    char.toUpperCase()
+                    char.toUpperCase(),
                   );
 
                   const updated = [...otherCustomers];

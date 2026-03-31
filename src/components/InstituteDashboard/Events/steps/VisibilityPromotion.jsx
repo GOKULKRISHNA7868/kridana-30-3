@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 
 const VisibilityPromotion = ({ formData, setFormData }) => {
   const fileInputRef = useRef(null);
+  const [showMessage, setShowMessage] = useState(false);
 
   const publish = formData?.promotion?.publish || false;
   const banners = formData?.promotion?.bannerurl || [];
@@ -133,7 +134,10 @@ const VisibilityPromotion = ({ formData, setFormData }) => {
           </label>
 
           <div
-            onClick={() => fileInputRef.current.click()}
+            onClick={() => {
+              setShowMessage(true);
+              fileInputRef.current.click();
+            }}
             className="w-full border border-orange-300 rounded-lg px-4 py-3 flex justify-between cursor-pointer hover:bg-orange-50"
           >
             <span className="text-gray-500">
@@ -152,6 +156,11 @@ const VisibilityPromotion = ({ formData, setFormData }) => {
             onChange={uploadBanners}
             className="hidden"
           />
+          {showMessage && (
+            <p className="text-red-500 text-sm mt-2">
+              Banner measurements should be Width - 1440px & Height - 500px
+            </p>
+          )}
         </div>
 
         {/* Note */}

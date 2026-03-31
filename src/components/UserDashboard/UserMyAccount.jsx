@@ -54,12 +54,33 @@ const MyAccount = () => {
 
   /* ---------------- HANDLE INPUT ---------------- */
   const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let newValue = value;
+
+    // ✅ Full Name → only alphabets + capitalize
+    if (name === "name") {
+      newValue = value
+        .replace(/[^A-Za-z ]/g, "")
+        .replace(/\b[a-z]/g, (c) => c.toUpperCase());
+    }
+
+    // ✅ Phone → only numbers + max 10 digits
+    if (name === "phone") {
+      newValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+    }
+
+    setProfile((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
   };
 
   /* ---------------- SAVE PROFILE ---------------- */
   const handleSave = async () => {
-    if (!user?.uid) return;
+    if (profile.phone && profile.phone.length !== 10) {
+      alert("Phone number must be 10 digits");
+      return;
+    }
 
     const ref = doc(db, "users", user.uid);
 
@@ -79,7 +100,6 @@ const MyAccount = () => {
 
     alert("Profile saved ✅");
   };
-
   /* ---------------- CLOUDINARY UPLOAD FUNCTION ---------------- */
   const uploadToCloudinary = async (file, type) => {
     setUploading(true);
@@ -172,6 +192,21 @@ const MyAccount = () => {
             <input type="file" hidden onChange={handleProfileUpload} />
           </label>
           <span className="text-xs mt-1 text-gray-600">Change Profile</span>
+          {profile.profileImage && (
+            <button
+              onClick={async () => {
+                setProfile((prev) => ({ ...prev, profileImage: "" }));
+
+                await updateDoc(doc(db, "users", user.uid), {
+                  profileImage: "",
+                  updatedAt: serverTimestamp(),
+                });
+              }}
+              className="text-red-500 text-xs hover:underline"
+            >
+              Remove Profile
+            </button>
+          )}
         </div>
       </div>
 
@@ -224,6 +259,8 @@ const MyAccount = () => {
               name="phone"
               value={profile.phone}
               onChange={handleChange}
+              maxLength={10}
+              inputMode="numeric"
               className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
             />
           </div>

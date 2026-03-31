@@ -17,7 +17,7 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
   ]);
   const categoryRef = useRef(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState(null);
+
   const categories = [
     "Martial Arts",
     "Team Ball Sports",
@@ -110,15 +110,7 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
 
     fetchStudents();
   }, [user]);
-  useEffect(() => {
-    if (formData?.participants?.requiredDocument) {
-      setUploadedFile({
-        name: "Uploaded Document",
-        url: formData.participants.requiredDocument,
-        type: "file",
-      });
-    }
-  }, [formData]);
+
   // =========================
   // Save other institute customers to formData
   // =========================
@@ -255,35 +247,11 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-2">
-              Upload required Documents*
+              Upload Required Documents*
             </label>
 
             <div className="border border-orange-300 rounded-lg h-10 flex items-center justify-between px-3">
-              {uploadedFile ? (
-                <div className="flex items-center gap-2 text-sm">
-                  {/* Preview for image */}
-                  {uploadedFile.type.startsWith("image/") ? (
-                    <img
-                      src={uploadedFile.url}
-                      alt="preview"
-                      className="w-8 h-8 rounded object-cover"
-                    />
-                  ) : (
-                    <span className="text-green-600 font-semibold">📄</span>
-                  )}
-
-                  <a
-                    href={uploadedFile.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-600 truncate max-w-[150px]"
-                  >
-                    {uploadedFile.name}
-                  </a>
-                </div>
-              ) : (
-                <span className="text-gray-400 text-sm">Upload Documents</span>
-              )}
+              <span className="text-gray-400 text-sm">Upload Documents</span>
 
               <input
                 type="file"
@@ -298,13 +266,6 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
 
                   if (url) {
                     handleChange("requiredDocument", url);
-
-                    // ✅ store file info for UI
-                    setUploadedFile({
-                      name: file.name,
-                      url: url,
-                      type: file.type,
-                    });
                   }
                 }}
               />

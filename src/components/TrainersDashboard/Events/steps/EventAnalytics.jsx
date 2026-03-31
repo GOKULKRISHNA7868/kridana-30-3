@@ -25,9 +25,16 @@ const EventAnalytics = () => {
         ...doc.data(),
       }));
 
-      setEvents(data);
+      // ✅ SORT EVENTS BY NAME (A → Z)
+      const sortedData = data.sort((a, b) =>
+        (a.basicInfo?.eventName || "").localeCompare(
+          b.basicInfo?.eventName || "",
+        ),
+      );
 
-      if (data.length) setSelectedEvent(data[0]);
+      setEvents(sortedData);
+
+      if (sortedData.length) setSelectedEvent(sortedData[0]);
     };
 
     fetchEvents();

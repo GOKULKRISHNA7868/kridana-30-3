@@ -49,7 +49,15 @@ const ReelViewer = () => {
   const commentsEndRef = useRef(null);
 
   const user = auth.currentUser;
-
+  useEffect(() => {
+    if (location.state?.reels) {
+      setReels(location.state.reels);
+      setActiveIndex(Number(index) || 0);
+      setLoading(false);
+    } else {
+      fetchReels();
+    }
+  }, [location.state, index]);
   /* ================= FETCH REELS ================= */
   useEffect(() => {
     const fetchReels = async () => {
@@ -108,7 +116,8 @@ const ReelViewer = () => {
       fetchReels(); // your existing fetch function
     }
   }, []);
-  const reel = reels.length > 0 ? reels[activeIndex] : null;
+  const reel =
+    reels.length > 0 && reels[activeIndex] ? reels[activeIndex] : null;
 
   /* ================= AUTO SCROLL COMMENTS ================= */
   useEffect(() => {
@@ -119,7 +128,7 @@ const ReelViewer = () => {
 
   /* ================= PROFILE VIEW TRACK ================= */
   useEffect(() => {
-    if (!reel || !user) return;
+    if (!reel || !user || !reel.ownerId) return;
 
     const registerProfileView = async () => {
       const viewId = `${user.uid}_${reel.ownerId}`;
@@ -162,9 +171,11 @@ const ReelViewer = () => {
 
   /* ================= VIEW COUNT ================= */
   useEffect(() => {
-    if (!reel || !user) return;
+    if (!reel || !user || !reel.reelId) return;
 
     const viewRef = doc(db, "reelViews", reel.reelId + "_" + user.uid);
+    if (!reel?.reelId) return;
+
     const reelRef = doc(db, "reels", reel.reelId);
 
     const registerView = async () => {
@@ -197,7 +208,7 @@ const ReelViewer = () => {
 
   /* ================= LIKE ================= */
   useEffect(() => {
-    if (!reel || !user) return;
+    if (!reel || !user || !reel.reelId) return;
 
     const likeRef = doc(db, "reelLikes", reel.reelId + "_" + user.uid);
     const reelRef = doc(db, "reels", reel.reelId);
@@ -214,7 +225,7 @@ const ReelViewer = () => {
   }, [reel, user]);
   /* ================= DISLIKE ================= */ // 🔽 DISLIKE
   useEffect(() => {
-    if (!reel || !user) return;
+    if (!reel || !user || !reel.reelId) return;
 
     const dislikeRef = doc(db, "reelDislikes", reel.reelId + "_" + user.uid);
     const reelRef = doc(db, "reels", reel.reelId);
@@ -292,6 +303,8 @@ const ReelViewer = () => {
   useEffect(() => {
     if (!user || !reel) return;
 
+    if (!user || !reel?.ownerId) return;
+
     const followRef = doc(db, "followers", `${user.uid}_${reel.ownerId}`);
 
     const unsub = onSnapshot(followRef, (snap) => {
@@ -300,7 +313,13 @@ const ReelViewer = () => {
 
     return () => unsub();
   }, [user, reel]);
-
+  useEffect(() => {
+    if (reels.length > 0) {
+      if (activeIndex >= reels.length) {
+        setActiveIndex(0); // reset safely
+      }
+    }
+  }, [reels]);
   const followProfile = async () => {
     if (!user || !reel) return;
     if (followLoading) return;

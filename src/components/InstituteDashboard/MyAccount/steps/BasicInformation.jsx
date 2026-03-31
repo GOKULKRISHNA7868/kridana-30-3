@@ -374,40 +374,42 @@ const BasicInformation = () => {
   }, [user]);
   // ✅ HANDLE CHANGE
   const handleChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  let newValue = value;
+    let newValue = value;
 
-  // ✅ Fields to capitalize
- const capitalizeFields = [
-  "institutionName", // ✅ ADD THIS
-  "type",
-  "headCoach",
-  "tagline",
-];
-  if (capitalizeFields.includes(name)) {
-    // allow only letters for name fields
-    if (["headCoach", "type"].includes(name)) {
-      newValue = newValue.replace(/[^A-Za-z ]/g, "");
+    // ✅ Only numbers for Established Year
+    if (name === "establishedYear") {
+      newValue = newValue.replace(/[^0-9]/g, "").slice(0, 4);
     }
 
-    // ✅ Capitalize each word
-    newValue = newValue.replace(/\b[a-z]/g, (char) =>
-      char.toUpperCase()
-    );
-  }
+    const capitalizeFields = [
+      "institutionName",
+      "type",
+      "headCoach",
+      "tagline",
+    ];
 
-  setFormData((prev) => ({
-    ...prev,
-    [name]: newValue,
-  }));
+    if (capitalizeFields.includes(name)) {
+      // ✅ allow only letters
+      if (["headCoach", "type", "institutionName"].includes(name)) {
+        newValue = newValue.replace(/[^A-Za-z ]/g, "");
+      }
 
-  setErrors((prev) => ({
-    ...prev,
-    [name]: "",
-  }));
-};
+      // ✅ Capitalize
+      newValue = newValue.replace(/\b[a-z]/g, (char) => char.toUpperCase());
+    }
 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  };
   // ✅ VALIDATION
   const validate = () => {
     let newErrors = {};

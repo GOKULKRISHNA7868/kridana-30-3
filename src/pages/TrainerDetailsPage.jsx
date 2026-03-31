@@ -133,10 +133,12 @@ export default function TrainerDetailsPage() {
         </button>
 
         <div className="flex flex-col md:flex-row gap-10 items-center">
-          <img
-            src={trainer.profileImageUrl}
-            className="w-52 h-52 rounded-full object-cover border-4 border-orange-400 shadow-lg"
-          />
+          <div className="w-52 h-52 rounded-full overflow-hidden border-4 border-orange-400 shadow-lg">
+            <img
+              src={trainer.profileImageUrl}
+              className="w-full h-full object-cover object-center scale-105"
+            />
+          </div>
 
           <div className="flex-1">
             <h1 className="text-4xl font-bold text-[#ff7a00]">
@@ -194,40 +196,40 @@ export default function TrainerDetailsPage() {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-4 mt-6">
-{trainer.phoneNumber && (
-  <a href={`tel:${trainer.phoneNumber}`} className="btn-primary">
-    <img src="/call-icon.png" className="w-4 h-4" alt="call" />
-    Call
-  </a>
-)}
+              {trainer.phoneNumber && (
+                <a href={`tel:${trainer.phoneNumber}`} className="btn-primary">
+                  <img src="/call-icon.png" className="w-4 h-4" alt="call" />
+                  Call
+                </a>
+              )}
 
-{trainer.email && trainer.email.includes("@") && (
-  <a
-    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${trainer.email.trim()}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="btn-outline flex items-center gap-2"
-  >
-    <img src="/email-icon.png" className="w-4 h-4" alt="email" />
-    Email
-  </a>
-)}
+              {trainer.email && trainer.email.includes("@") && (
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${trainer.email.trim()}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-outline flex items-center gap-2"
+                >
+                  <img src="/email-icon.png" className="w-4 h-4" alt="email" />
+                  Email
+                </a>
+              )}
 
-<button
-  onClick={startTrainerChat}
-  className="btn-outline flex items-center gap-2"
->
-  <img src="/chat-icon.png" className="w-5 h-5" alt="chat" />
-  Chat
-</button>
+              <button
+                onClick={startTrainerChat}
+                className="btn-outline flex items-center gap-2"
+              >
+                <img src="/chat-icon.png" className="w-5 h-5" alt="chat" />
+                Chat
+              </button>
 
-<button
-  onClick={() => navigate(`/book-demo/${trainer.id}`)}
-  className="btn-outline flex items-center gap-2"
->
-  <Calendar size={16} className="text-[#ff7a00]" />
-  Book Demo
-</button>
+              <button
+                onClick={() => navigate(`/book-demo/${trainer.id}`)}
+                className="btn-outline flex items-center gap-2"
+              >
+                <Calendar size={16} className="text-[#ff7a00]" />
+                Book Demo
+              </button>
             </div>
           </div>
         </div>
