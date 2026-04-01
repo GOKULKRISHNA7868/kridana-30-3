@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { useAuth } from "../../../../context/AuthContext";
+import { deleteDoc } from "firebase/firestore"; // ✅ ADD THIS
 export default function EditEventDetails({ eventId, goBack, setActiveMenu }) {
   const navigate = useNavigate();
 
@@ -141,7 +142,42 @@ export default function EditEventDetails({ eventId, goBack, setActiveMenu }) {
 
     alert("Event Updated Successfully");
   };
+  const handleCancelEvent = async () => {
+    if (!selectedEventId) {
+      alert("Please select an event first");
+      return;
+    }
 
+    const confirmCancel = window.confirm(
+      "Are you sure you want to cancel this event?",
+    );
+    if (!confirmCancel) return;
+
+    try {
+      await deleteDoc(doc(db, "events", selectedEventId)); // ✅ DELETE EVENT
+
+      alert("Event cancelled successfully");
+
+      // Reset UI
+      setSelectedEventId("");
+      setForm({
+        organizerName: "",
+        volunteersName: "",
+        registrationFees: "",
+        contactNumber: "",
+        email: "",
+        emergencyNumber: "",
+        documents: "",
+        timings: "",
+        address: "",
+      });
+      setCustomers([]);
+      setManagement([]);
+    } catch (error) {
+      console.error(error);
+      alert("Error cancelling event");
+    }
+  };
   // Capitalize each word (Ravi Kumar)
   const capitalizeWords = (value) => {
     return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
@@ -178,6 +214,16 @@ export default function EditEventDetails({ eventId, goBack, setActiveMenu }) {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-6xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">Edit Event Details</h2>
+
+          <button
+            onClick={handleCancelEvent}
+            className="border border-orange-500 text-orange-500 px-4 py-1 rounded-md hover:bg-orange-50"
+          >
+            Cancel Event
+          </button>
+        </div>
         {/* TITLE */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-1">Select Event</label>
@@ -206,7 +252,6 @@ export default function EditEventDetails({ eventId, goBack, setActiveMenu }) {
               ))}
           </select>
         </div>
-        <h2 className="text-xl font-semibold mb-6">Edit Event Details</h2>
 
         {/* FORM GRID */}
 

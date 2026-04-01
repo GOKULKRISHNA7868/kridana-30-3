@@ -10,7 +10,8 @@ import { ChevronDown } from "lucide-react";
 const ParticipantConfiguration = ({ formData, setFormData }) => {
   const { user } = useAuth();
   const auth = getAuth();
-
+  const [docPreview, setDocPreview] = useState("");
+  const [docLoading, setDocLoading] = useState(false);
   const [students, setStudents] = useState([]);
   const [otherCustomers, setOtherCustomers] = useState([
     { name: "", phone: "" },
@@ -170,6 +171,11 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  useEffect(() => {
+    if (formData?.participants?.requiredDocument) {
+      setDocPreview(formData.participants.requiredDocument);
+    }
+  }, [formData]);
   return (
     <div className="w-full space-y-6">
       {/* ================= MAIN CARD ================= */}
@@ -250,32 +256,65 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
               Upload Required Documents*
             </label>
 
-            <div className="border border-orange-300 rounded-lg h-10 flex items-center justify-between px-3">
-              <span className="text-gray-400 text-sm">Upload Documents</span>
+            <div className="border border-orange-300 rounded-lg p-3 flex flex-col gap-2">
+              {/* 🔄 Loading */}
+              {docLoading && (
+                <p className="text-sm text-orange-500">Uploading document...</p>
+              )}
 
-              <input
-                type="file"
-                id="docs"
-                className="hidden"
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                onChange={async (e) => {
-                  const file = e.target.files[0];
-                  if (!file) return;
+              {/* ✅ Preview after upload */}
+              {docPreview && !docLoading && (
+                <div className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                  <a
+                    href={docPreview}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 text-sm underline truncate"
+                  >
+                    View Uploaded Document
+                  </a>
+                </div>
+              )}
 
-                  const url = await uploadToCloudinary(file);
+              {/* 📤 Upload / Replace */}
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 text-sm">
+                  {docPreview ? "Replace Document" : "Upload Documents"}
+                </span>
 
-                  if (url) {
-                    handleChange("requiredDocument", url);
-                  }
-                }}
-              />
-              <label htmlFor="docs" className="cursor-pointer text-orange-500">
-                <img
-                  src="/upload.png"
-                  alt="Upload"
-                  className="w-5 h-5 object-contain"
+                <input
+                  type="file"
+                  id="docs"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    setDocLoading(true);
+
+                    const url = await uploadToCloudinary(file);
+
+                    if (url) {
+                      handleChange("requiredDocument", url); // 🔥 save to Firebase formData
+                      setDocPreview(url); // 🔥 show preview
+                    }
+
+                    setDocLoading(false);
+                  }}
                 />
-              </label>
+
+                <label
+                  htmlFor="docs"
+                  className="cursor-pointer text-orange-500"
+                >
+                  <img
+                    src="/upload.png"
+                    alt="Upload"
+                    className="w-5 h-5 object-contain"
+                  />
+                </label>
+              </div>
             </div>
           </div>
 
