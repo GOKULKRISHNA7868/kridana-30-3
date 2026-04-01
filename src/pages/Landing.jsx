@@ -4,6 +4,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 /* ================= DISTANCE ================= */
 const getDistance = (lat1, lon1, lat2, lon2) => {
   const toRad = (v) => (v * Math.PI) / 180;
@@ -48,7 +49,34 @@ const Landing = () => {
     const auth = getAuth();
     return onAuthStateChanged(auth, setUser);
   }, []);
+  /* ================= FETCH TRAINERS + INSTITUTES ================= */
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const trainerSnap = await getDocs(collection(db, "trainers"));
+        const instituteSnap = await getDocs(collection(db, "institutes"));
 
+        // ✅ Trainers
+        const trainerList = trainerSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // ✅ Institutes
+        const instituteList = instituteSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setTrainers(trainerList);
+        setInstitutes(instituteList);
+      } catch (error) {
+        console.error("❌ Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
   /* ================= LOCATION ================= */
 
   useEffect(() => {
@@ -162,13 +190,7 @@ const Landing = () => {
 
     fetchReels();
   }, []);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000); // 3 seconds
 
-    return () => clearInterval(interval);
-  }, []);
   return (
     <div className="w-full font-sans">
       {/* 3px white line */}
@@ -178,17 +200,56 @@ const Landing = () => {
       {/* ================= HERO SECTION =================== */}
       {/* ================================================= */}
       <section className="w-full bg-white">
-        <div className="relative w-full max-w-[1440px] h-[500px] mx-auto overflow-hidden">
+        <div className="relative w-full max-w-[1440px] h-[500px] mx-auto overflow-hidden group">
+          {/* SLIDES */}
           {slides.map((img, index) => (
             <img
               key={index}
               src={img}
               alt="slide"
-              className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
+              className={`absolute w-full h-full object-cover transition-opacity duration-700 ${
+                index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
             />
           ))}
+
+          {/* LEFT ARROW */}
+          {/* LEFT ARROW */}
+          <button
+            onClick={() =>
+              setCurrentSlide((prev) =>
+                prev === 0 ? slides.length - 1 : prev - 1,
+              )
+            }
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full shadow-md hover:bg-black transition z-20"
+          >
+            ❮
+          </button>
+
+          {/* RIGHT ARROW */}
+          <button
+            onClick={() =>
+              setCurrentSlide((prev) =>
+                prev === slides.length - 1 ? 0 : prev + 1,
+              )
+            }
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full shadow-md hover:bg-black transition z-20"
+          >
+            ❯
+          </button>
+
+          {/* DOT INDICATORS */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-3 h-3 rounded-full ${
+                  currentSlide === index ? "bg-orange-500" : "bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 

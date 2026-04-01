@@ -28,6 +28,7 @@ import MyAccountPage from "./MyAccountPage";
 import { db } from "../../firebase";
 import ResetPassword from "./ResetPassword";
 import PaidRecipet from "./PaidRecipet";
+import KYC from "./KYC";
 import {
   collection,
   query,
@@ -153,6 +154,7 @@ const TrainersDashboard = () => {
           value: "Customer & Management Settings",
         },
         { label: "My Account", value: "My Account" },
+        { label: "KYC", value: "KYC" },
         { label: "Payment & Subscription", value: "Payment & Subscription" },
       ],
     },
@@ -342,6 +344,7 @@ const TrainersDashboard = () => {
     if (item === "Chat Box") return setView("chatBox");
 
     if (item === "My Account") return setView("myAccount");
+    if (item === "KYC") return setView("KYC");
     if (item === "Customer & Management Settings")
       return setView("CustomerManagementSettings");
     //if (item === "Family Details") return setView("Family");
@@ -407,6 +410,7 @@ const TrainersDashboard = () => {
     if (view === "performance") return <PerformanceReports />;
     if (view === "analytics") return <Reelsdata />;
     if (view === "myAccount") return <TrainerMyAccountLayout />;
+    if (view === "KYC") return <KYC />;
     if (view === "chatBox") return <ChatBox />;
     if (view === "timetable") return <Timetable />;
     if (view === "events")

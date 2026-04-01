@@ -41,6 +41,7 @@ import MyAccountPage from "./MyAccountPage";
 import PaidRecipet from "./PaidRecipet";
 import ComplaintHistory from "./ComplaintHistory";
 import ResetPassword from "./ResetPassword";
+import KYC from "./KYC";
 import {
   FaUsers,
   FaUserTie,
@@ -61,7 +62,7 @@ const sidebarSections = [
     icon: "customers",
     items: [
       "Customers Attendance",
-      "Customer Details",
+      "Add Customers",
       "Paid Recipets",
       "Fees Details",
       "Performance Reports",
@@ -83,6 +84,7 @@ const sidebarSections = [
     items: [
       "Customer & Management Settings",
       "My Account",
+      "kyc",
       "Payment & Subscription",
     ],
   },
@@ -236,7 +238,7 @@ const InstituteDashboard = () => {
         return <SalaryDetailsPage />;
       case "Management Details":
         return <AddTrainerDetailsPage />;
-      case "Customer Details":
+      case "Add Customers":
         return <AddStudentDetailsPage />;
       case "Add Events":
         return <EventsPage setActiveMenu={setActiveMenu} />;
@@ -268,6 +270,8 @@ const InstituteDashboard = () => {
         return <PaidRecipet />;
       case "Payment & Subscription":
         return <PaymentsSubscriptionPage />;
+      case "kyc":
+        return <KYC />;
       case "Complaint History":
         return (
           <ComplaintHistory

@@ -77,7 +77,12 @@ const SalaryDetailsPage = () => {
     if (!user) return;
 
     const fetchSalaries = async () => {
-      const snap = await getDocs(collection(db, "instituteSalaries"));
+      const q = query(
+        collection(db, "instituteSalaries"),
+        where("instituteId", "==", user.uid), // ✅ ONLY THIS INSTITUTE
+      );
+
+      const snap = await getDocs(q);
       setSalaries(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     };
 
@@ -90,12 +95,12 @@ const SalaryDetailsPage = () => {
       .filter((t) =>
         `${t.firstName} ${t.lastName}`
           .toLowerCase()
-          .includes(search.toLowerCase())
+          .includes(search.toLowerCase()),
       )
       .sort((a, b) =>
         `${a.firstName} ${a.lastName}`.localeCompare(
-          `${b.firstName} ${b.lastName}`
-        )
+          `${b.firstName} ${b.lastName}`,
+        ),
       );
   }, [trainers, search]);
 
@@ -124,30 +129,30 @@ const SalaryDetailsPage = () => {
   };
 
   const saveSalary = async () => {
-   if (!selectedTrainer) {
-  alert("Select trainer first");
-  return;
-}
+    if (!selectedTrainer) {
+      alert("Select trainer first");
+      return;
+    }
 
-if (!selectedMonth) {
-  alert("Please select a month first!");
-  return;
-}
+    if (!selectedMonth) {
+      alert("Please select a month first!");
+      return;
+    }
 
-if (!editData.monthlySalary || isNaN(editData.monthlySalary)) {
-  alert("Enter valid Monthly Salary");
-  return;
-}
+    if (!editData.monthlySalary || isNaN(editData.monthlySalary)) {
+      alert("Enter valid Monthly Salary");
+      return;
+    }
 
-if (!editData.paidAmount || isNaN(editData.paidAmount)) {
-  alert("Enter valid Paid Amount");
-  return;
-}
+    if (!editData.paidAmount || isNaN(editData.paidAmount)) {
+      alert("Enter valid Paid Amount");
+      return;
+    }
 
-if (!editData.paidDate) {
-  alert("Select paid date");
-  return;
-}
+    if (!editData.paidDate) {
+      alert("Select paid date");
+      return;
+    }
 
     try {
       const { monthlySalary, paidAmount, paidDate } = editData;
@@ -155,14 +160,14 @@ if (!editData.paidDate) {
       // Update trainer monthly salary
       await setDoc(
         doc(db, "InstituteTrainers", selectedTrainer.id),
-        { monthlySalary:parseInt(monthlySalary || 0) },
+        { monthlySalary: parseInt(monthlySalary || 0) },
         { merge: true },
       );
 
       // Save salary month-wise
       // check if salary already exists for trainer + month
       const existingSalary = salaries.find(
-        (s) => s.trainerId === selectedTrainer.id && s.month === selectedMonth
+        (s) => s.trainerId === selectedTrainer.id && s.month === selectedMonth,
       );
 
       if (existingSalary) {
@@ -176,7 +181,7 @@ if (!editData.paidDate) {
             month: selectedMonth,
             updatedAt: serverTimestamp(),
           },
-          { merge: true }
+          { merge: true },
         );
       } else {
         // CREATE new salary
@@ -196,8 +201,8 @@ if (!editData.paidDate) {
       const trainerSnap = await getDocs(
         query(
           collection(db, "InstituteTrainers"),
-          where("instituteId", "==", user.uid)
-        )
+          where("instituteId", "==", user.uid),
+        ),
       );
 
       setTrainers(trainerSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -231,25 +236,24 @@ if (!editData.paidDate) {
 
   const totalTrainers = trainers.length;
   // ✅ TOTAL SALARY → FROM TRAINERS (NOT salaries)
-const totalSalaryAmount = trainers.reduce(
-  (sum, t) => sum + parseInt(t.monthlySalary || 0),
-  0
-);
+  // ✅ TOTAL SALARY (ONLY FOR SELECTED MONTH)
+  const totalSalaryAmount = selectedMonth
+    ? trainers.reduce((sum, t) => sum + parseInt(t.monthlySalary || 0), 0)
+    : 0;
 
-// ✅ FILTER CURRENT MONTH SALARIES
-const monthSalaries = selectedMonth
-  ? salaries.filter((s) => s.month === selectedMonth)
-  : [];
+  // ✅ FILTER CURRENT MONTH SALARIES
+  const monthSalaries = selectedMonth
+    ? salaries.filter((s) => s.month === selectedMonth)
+    : [];
 
-// ✅ TOTAL PAID → FROM SALARY RECORDS
-const totalSalaryPaid = monthSalaries.reduce(
-  (sum, s) => sum + parseInt(s.paidAmount || 0),
-  0
-);
+  // ✅ TOTAL PAID
+  const totalSalaryPaid = monthSalaries.reduce(
+    (sum, s) => sum + parseInt(s.paidAmount || 0),
+    0,
+  );
 
-// ✅ TOTAL PENDING
-const totalSalaryPending = totalSalaryAmount - totalSalaryPaid;
-
+  // ✅ TOTAL PENDING (SAFE)
+  const totalSalaryPending = Math.max(totalSalaryAmount - totalSalaryPaid, 0);
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       {/* HEADER */}
@@ -267,8 +271,9 @@ const totalSalaryPending = totalSalaryAmount - totalSalaryPaid;
             </span>
             <ChevronDown
               size={18}
-              className={`ml-2 transition-transform ${showMonthDropdown ? "rotate-180" : ""
-                }`}
+              className={`ml-2 transition-transform ${
+                showMonthDropdown ? "rotate-180" : ""
+              }`}
             />
           </button>
           {showMonthDropdown && (
@@ -351,8 +356,9 @@ const totalSalaryPending = totalSalaryAmount - totalSalaryPaid;
             <div
               key={trainer.id}
               onClick={() => setSelectedTrainer(trainer)}
-              className={`grid grid-cols-5 min-w-[700px] px-6 py-4 border-t items-center cursor-pointer ${selectedTrainer?.id === trainer.id ? "bg-orange-50" : ""
-                }`}
+              className={`grid grid-cols-5 min-w-[700px] px-6 py-4 border-t items-center cursor-pointer ${
+                selectedTrainer?.id === trainer.id ? "bg-orange-50" : ""
+              }`}
             >
               <div className="flex items-center">
                 <span className="mr-2">{index + 1}.</span>
@@ -423,42 +429,42 @@ const ModalForm = ({
     <div className="bg-white p-6 rounded-xl w-[90%] sm:w-96 space-y-4">
       <h2 className="font-semibold">{title}</h2>
 
-    <input
-  type="text"
-  inputMode="numeric"
-  className="border w-full p-2 rounded"
-  placeholder="Monthly Salary"
-  value={data.monthlySalary}
-  onChange={(e) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setData({ ...data, monthlySalary: value });
-  }}
-/>
+      <input
+        type="text"
+        inputMode="numeric"
+        className="border w-full p-2 rounded"
+        placeholder="Monthly Salary"
+        value={data.monthlySalary}
+        onChange={(e) => {
+          const value = e.target.value.replace(/[^0-9]/g, "");
+          setData({ ...data, monthlySalary: value });
+        }}
+      />
 
-    {showPaidFields && (
-  <>
-    {/* ✅ PAID AMOUNT */}
-    <input
-      type="text"
-      inputMode="numeric"
-      className="border w-full p-2 rounded"
-      placeholder="Paid Amount"
-      value={data.paidAmount}
-      onChange={(e) => {
-        const value = e.target.value.replace(/[^0-9]/g, "");
-        setData({ ...data, paidAmount: value });
-      }}
-    />
+      {showPaidFields && (
+        <>
+          {/* ✅ PAID AMOUNT */}
+          <input
+            type="text"
+            inputMode="numeric"
+            className="border w-full p-2 rounded"
+            placeholder="Paid Amount"
+            value={data.paidAmount}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              setData({ ...data, paidAmount: value });
+            }}
+          />
 
-    {/* ✅ PAID DATE */}
-    <input
-      type="date"
-      className="border w-full p-2 rounded"
-      value={data.paidDate}
-      onChange={(e) => setData({ ...data, paidDate: e.target.value })}
-    />
-  </>
-)}
+          {/* ✅ PAID DATE */}
+          <input
+            type="date"
+            className="border w-full p-2 rounded"
+            value={data.paidDate}
+            onChange={(e) => setData({ ...data, paidDate: e.target.value })}
+          />
+        </>
+      )}
 
       <div className="flex justify-end gap-3">
         <button type="button" onClick={onClose}>

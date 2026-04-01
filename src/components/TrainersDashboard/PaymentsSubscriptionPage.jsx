@@ -286,30 +286,6 @@ const PaymentsSubscriptionPage = () => {
             Pay Now
           </button>
         </div>
-
-        <div className="border border-orange-400 rounded-xl p-6 flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-semibold">Institutes Plan</h3>
-            <p className="text-orange-600 font-bold mt-2">₹ 999/-</p>
-          </div>
-          <button
-            onClick={() => {
-              if (isPlanActive()) {
-                alert(
-                  `Your ${currentPlan} plan is active until ${formatDate(
-                    planData?.currentPlan?.endDate?.toDate(),
-                  )}`,
-                );
-                return;
-              }
-
-              navigate("/plans");
-            }}
-            className="bg-orange-500 text-white px-6 py-2 rounded-lg"
-          >
-            Pay Now
-          </button>
-        </div>
       </div>
     </div>
   );

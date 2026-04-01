@@ -154,16 +154,26 @@ export default function InstituteDetailsPage() {
               className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-orange-400"
             />
 
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">
-                {inst.instituteName}
-                <span className="ml-3 text-sm bg-orange-100 text-orange-600 px-2 py-1 rounded-md font-semibold">
-                  ⭐ {inst.rating?.toFixed(1) || "0.0"}
+            <div className="flex gap-1 mt-3">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <span
+                  key={s}
+                  onClick={() => handleRating(s)}
+                  className={`text-2xl cursor-pointer ${
+                    inst.ratingsByUser?.[auth.currentUser?.uid] >= s
+                      ? "text-yellow-400"
+                      : "text-gray-300 hover:text-yellow-300"
+                  }`}
+                >
+                  ⭐
                 </span>
-              </h1>
-
-              <p className="text-gray-500 mt-1">{inst.organizationType}</p>
+              ))}
             </div>
+
+            <p className="text-sm font-semibold mt-1">
+              {inst.rating?.toFixed(1) || "0.0"} ⭐ ({inst.ratingCount || 0}{" "}
+              reviews)
+            </p>
           </div>
 
           {/* RIGHT SIDE - Buttons */}

@@ -25,6 +25,7 @@ const PaymentOverview = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [feeHistory, setFeeHistory] = useState([]);
   const navigate = useNavigate();
+
   const filteredHistory = feeHistory.filter(
     (f) =>
       (!selectedCategory || f.category === selectedCategory) &&
@@ -124,7 +125,7 @@ const PaymentOverview = () => {
           while (
             tempDate.getFullYear() < today.getFullYear() ||
             (tempDate.getFullYear() === today.getFullYear() &&
-              tempDate.getMonth() < today.getMonth()) // 🔴 exclude current month
+              tempDate.getMonth() <= today.getMonth()) // ✅ include current month
           ) {
             const monthName = tempDate.toLocaleString("default", {
               month: "long",
@@ -636,6 +637,23 @@ const PaymentOverview = () => {
             <p className="font-semibold">Payment Reminder 🔔</p>
             <p className="text-sm mt-1">
               Your fee is due on {student.monthlyDate}
+            </p>
+          </div>
+        </div>
+      )}
+      {processing && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white px-6 py-5 rounded-xl shadow-lg flex flex-col items-center gap-3">
+            {/* Spinner */}
+            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+
+            {/* Text */}
+            <p className="text-sm font-semibold text-gray-700">
+              Processing Payment...
+            </p>
+
+            <p className="text-xs text-gray-400">
+              Please don’t close this page
             </p>
           </div>
         </div>
