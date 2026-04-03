@@ -1,26 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db, auth } from "../firebase"; // adjust path
+import { db, auth } from "../firebase";
 import {
   collection,
   addDoc,
   doc,
-  setDoc,
   serverTimestamp,
+  getDoc,
 } from "firebase/firestore";
-import { getDoc } from "firebase/firestore";
+
 const FeePaymentSuccess = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+
+  const [saving, setSaving] = useState(true);
+  const [saved, setSaved] = useState(false);
 
   if (!state) {
     return <div className="p-8">No Data Found</div>;
   }
 
+  // 🔒 BLOCK BACK BUTTON
+  useEffect(() => {
+    const handleBack = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handleBack);
+
+    return () => {
+      window.removeEventListener("popstate", handleBack);
+    };
+  }, []);
+
+  // 🔥 AUTO SAVE FUNCTION
   const handleSubmit = async () => {
     try {
-      setLoading(true);
+      setSaving(true);
 
       const loginUid = auth.currentUser?.uid;
 
@@ -39,12 +56,9 @@ const FeePaymentSuccess = () => {
       }
 
       const studentData = studentSnap.data();
-
       const instituteId = studentData.instituteId || "";
 
-      console.log("🏫 Institute ID:", instituteId);
-
-      // ✅ 2. Save in institutepaymenthistory
+      // ✅ 2. Save institute payment history
       const instituteRef = collection(
         db,
         "instituepaymenthistory",
@@ -67,38 +81,66 @@ const FeePaymentSuccess = () => {
         createdAt: serverTimestamp(),
       });
 
-      // ✅ 3. Save in studentFees
+      // ✅ 3. Save individual fees
       for (const item of state.items) {
         await addDoc(collection(db, "studentFees"), {
           category: item.category || "",
           subCategory: item.subCategory || "",
           createdAt: serverTimestamp(),
           feeWaived: false,
-          instituteId: instituteId, // ✅ FROM STUDENT DOC
+          instituteId: instituteId,
           month: state.month || "",
           paidAmount: item.amount || 0,
           paidDate: state.date || "",
           studentId: loginUid,
-          totalAmount: item.totalAmount || item.amount || 0,
+          totalAmount: item.amount || 0,
           waiveReason: "",
         });
       }
 
-      alert("Payment saved successfully ✅");
-
-      navigate("/dashboard");
+      // ✅ SUCCESS
+      setSaved(true);
     } catch (err) {
       console.error("❌ SAVE ERROR:", err);
       alert("Failed to save payment");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  // 🚀 AUTO TRIGGER
+  useEffect(() => {
+    handleSubmit();
+  }, []);
+
+  // 🚀 AUTO REDIRECT AFTER SUCCESS (optional)
+  useEffect(() => {
+    if (saved) {
+      setTimeout(() => {
+        navigate("/user/dashboard");
+      }, 2000);
+    }
+  }, [saved, navigate]);
+
+  // 🔄 LOADING SCREEN
+  if (saving) {
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white z-50">
+        <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-lg font-semibold">Please wait...</p>
+        <p className="text-sm opacity-70">
+          Saving your payment, do not close or go back
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center p-6">
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-green-600 mb-4">
-          Payment Successful ✅
+        {/* HEADER */}
+        <h1 className="text-2xl font-bold text-green-600 mb-4 text-center">
+          {saved ? "Payment Saved Successfully 🎉" : "Processing Payment..."}
         </h1>
 
         <div className="space-y-2 text-sm">
@@ -145,15 +187,6 @@ const FeePaymentSuccess = () => {
             </div>
           ))}
         </div>
-
-        {/* ✅ SUBMIT BUTTON */}
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="mt-6 w-full bg-green-600 text-white py-2 rounded"
-        >
-          {loading ? "Saving..." : "Submit & Save"}
-        </button>
       </div>
     </div>
   );

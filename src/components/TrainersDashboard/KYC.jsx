@@ -65,8 +65,40 @@ const TrainerKYC = () => {
   }, [uid]);
 
   // 🔥 HANDLE INPUT
+  // 🔥 HANDLE INPUT
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+
+    // ✅ Alphabets only + Auto capitalize
+    const alphaFields = [
+      "accountName",
+      "businessName",
+      "businessType",
+      "profession",
+      "beneficiaryName",
+    ];
+
+    if (alphaFields.includes(name)) {
+      value = value.replace(/[^A-Za-z ]/g, ""); // allow letters + space
+      value = value.replace(/\b\w/g, (char) => char.toUpperCase()); // auto capitalize
+    }
+
+    // ✅ Numbers only
+    if (name === "accountNumber" || name === "confirmAccountNumber") {
+      value = value.replace(/[^0-9]/g, "");
+    }
+
+    // ✅ Remove spaces in email
+    if (name === "accountEmail") {
+      value = value.replace(/\s/g, "");
+    }
+
+    // ✅ IFSC uppercase
+    if (name === "ifsc") {
+      value = value.toUpperCase();
+    }
+
+    setForm({ ...form, [name]: value });
   };
 
   // 🔥 SUBMIT
@@ -132,7 +164,12 @@ const TrainerKYC = () => {
 
                 return (
                   <p key={key} className="break-all">
-                    <strong className="capitalize">{key}:</strong>{" "}
+                    <strong>
+                      {key
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (str) => str.toUpperCase())}
+                      :
+                    </strong>{" "}
                     {String(displayValue)}
                   </p>
                 );
@@ -150,77 +187,110 @@ const TrainerKYC = () => {
           <>
             {/* ✅ FORM */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                name="accountName"
-                placeholder="Account Name"
-                value={form.accountName}
-                onChange={handleChange}
-                className="input"
-              />
+              <div>
+                <label className="block mb-1 font-medium">Account Name:</label>
+                <input
+                  type="text"
+                  name="accountName"
+                  value={form.accountName}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
 
-              <input
-                name="accountEmail"
-                placeholder="Account Email"
-                value={form.accountEmail}
-                onChange={handleChange}
-                className="input"
-              />
+              <div>
+                <label className="block mb-1 font-medium">Account Email:</label>
+                <input
+                  type="email"
+                  name="accountEmail"
+                  value={form.accountEmail}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
 
-              <input
-                name="businessName"
-                placeholder="Business Name"
-                value={form.businessName}
-                onChange={handleChange}
-                className="input"
-              />
+              <div>
+                <label className="block mb-1 font-medium">Business Name:</label>
+                <input
+                  type="text"
+                  name="businessName"
+                  value={form.businessName}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 font-medium">Business Type:</label>
+                <input
+                  type="text"
+                  name="businessType"
+                  value={form.businessType}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
 
-              <input
-                name="businessType"
-                placeholder="Business Type"
-                value={form.businessType}
-                onChange={handleChange}
-                className="input"
-              />
+              <div>
+                <label className="block mb-1 font-medium">Profession:</label>
+                <input
+                  type="text"
+                  name="profession"
+                  value={form.profession}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
 
-              <input
-                name="profession"
-                placeholder="Profession"
-                value={form.profession}
-                onChange={handleChange}
-                className="input"
-              />
+              <div>
+                <label className="block mb-1 font-medium">IFSC Code:</label>
+                <input
+                  type="text"
+                  name="ifsc"
+                  value={form.ifsc}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
 
-              <input
-                name="ifsc"
-                placeholder="IFSC Code"
-                value={form.ifsc}
-                onChange={handleChange}
-                className="input"
-              />
+              <div>
+                <label className="block mb-1 font-medium">
+                  Account Number:
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  name="accountNumber"
+                  value={form.accountNumber}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block mb-1 font-medium">
+                  Re-enter Account Number:
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  name="confirmAccountNumber"
+                  value={form.confirmAccountNumber}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
 
-              <input
-                name="accountNumber"
-                placeholder="Account Number"
-                value={form.accountNumber}
-                onChange={handleChange}
-                className="input"
-              />
-
-              <input
-                name="confirmAccountNumber"
-                placeholder="Re-enter Account Number"
-                value={form.confirmAccountNumber}
-                onChange={handleChange}
-                className="input"
-              />
-
-              <input
-                name="beneficiaryName"
-                placeholder="Beneficiary Name"
-                value={form.beneficiaryName}
-                onChange={handleChange}
-                className="input"
-              />
+              <div>
+                <label className="block mb-1 font-medium">
+                  Beneficiary Name:
+                </label>
+                <input
+                  type="text"
+                  name="beneficiaryName"
+                  value={form.beneficiaryName}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
             </div>
 
             <button

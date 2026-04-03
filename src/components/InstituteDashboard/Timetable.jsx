@@ -29,7 +29,8 @@ export default function ClassTime() {
   const [branches, setBranches] = useState([]);
   const [form, setForm] = useState({
     date: "",
-    time: "",
+    startTime: "",
+    endTime: "",
     category: "",
     subCategory: "",
     branch: "",
@@ -131,9 +132,8 @@ export default function ClassTime() {
 
     const trainer = trainers.find((t) => t.id === form.trainerId);
 
-    const startDateTime = new Date(`${form.date}T${form.time}`);
-    const endDateTime = new Date(startDateTime);
-    endDateTime.setHours(endDateTime.getHours() + 1);
+    const startDateTime = new Date(`${form.date}T${form.startTime}`);
+    const endDateTime = new Date(`${form.date}T${form.endTime}`);
 
     const payload = {
       title: form.subCategory,
@@ -198,9 +198,13 @@ export default function ClassTime() {
   /* ---------------- FORMAT EVENTS ---------------- */
   const events = schedule.map((s) => ({
     id: s.id,
-    title: `${s.title} • ${s.trainerName} (${s.students?.length || 0} Students)`,
+    title: s.subCategory,
     start: s.start?.toDate ? s.start.toDate() : s.start,
     end: s.end?.toDate ? s.end.toDate() : s.end,
+    extendedProps: {
+      trainer: s.trainerName,
+      count: s.students?.length || 0,
+    },
   }));
 
   return (
@@ -216,20 +220,21 @@ export default function ClassTime() {
         slotMinTime="00:00:00"
         slotMaxTime="24:00:00"
         allDaySlot={false}
+        eventMinHeight={60}
         height="auto"
         events={events}
         selectable={true}
         select={(info) => {
           const date = info.startStr.split("T")[0];
-          const time = info.startStr.split("T")[1]?.slice(0, 5);
+          const start = info.startStr.split("T")[1]?.slice(0, 5);
+          const end = info.endStr.split("T")[1]?.slice(0, 5);
 
-          // 🔥 RESET EDIT MODE
           setEditId(null);
 
-          // 🔥 RESET FORM CLEANLY
           setForm({
             date,
-            time,
+            startTime: start,
+            endTime: end,
             category: "",
             subCategory: "",
             branch: "",
@@ -246,7 +251,8 @@ export default function ClassTime() {
 
           setForm({
             date: info.event.startStr.split("T")[0],
-            time: info.event.startStr.split("T")[1]?.slice(0, 5),
+            startTime: info.event.startStr.split("T")[1]?.slice(0, 5),
+            endTime: info.event.endStr.split("T")[1]?.slice(0, 5),
             category: event.category || "",
             subCategory: event.subCategory || "",
             branch: event.branch || "",
@@ -255,6 +261,23 @@ export default function ClassTime() {
           });
 
           setShowModal(true);
+        }}
+        eventContent={(info) => {
+          return (
+            <div className="p-1 text-xs leading-tight">
+              <div className="font-semibold text-[13px]">
+                {info.event.title}
+              </div>
+
+              <div className="text-black-600">
+                👤 {info.event.extendedProps.trainer}
+              </div>
+
+              <div className="text-black-600 font-medium">
+                👥 {info.event.extendedProps.count}
+              </div>
+            </div>
+          );
         }}
       />
 
@@ -265,7 +288,32 @@ export default function ClassTime() {
             <h3 className="text-xl font-semibold text-center">
               {isEdit ? "✏️ Edit Class" : "📅 Schedule Class"}
             </h3>
+            {/* TIME SELECTION */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm text-gray-500">Start Time</label>
+                <input
+                  type="time"
+                  className="w-full border rounded-lg p-2 mt-1"
+                  value={form.startTime}
+                  onChange={(e) =>
+                    setForm({ ...form, startTime: e.target.value })
+                  }
+                />
+              </div>
 
+              <div>
+                <label className="text-sm text-gray-500">End Time</label>
+                <input
+                  type="time"
+                  className="w-full border rounded-lg p-2 mt-1"
+                  value={form.endTime}
+                  onChange={(e) =>
+                    setForm({ ...form, endTime: e.target.value })
+                  }
+                />
+              </div>
+            </div>
             {/* CATEGORY */}
             <div>
               <label className="text-sm text-gray-500">Category</label>

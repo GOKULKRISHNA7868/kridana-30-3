@@ -143,67 +143,8 @@ const InstituteDataPage = ({
                text-[#5D3A09] placeholder:text-[#A16207]"
           />
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <button
-              onClick={() => {
-                const newState = !showNotifications;
-                setShowNotifications(newState);
-
-                if (newState) {
-                  markAllSeen();
-                }
-              }}
-              className="relative text-3xl hover:scale-110 transition"
-            >
-              <img
-                src="/notification-icon.png"
-                alt="notifications"
-                className="w-10 h-10 object-contain"
-              />
-
-              {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {showNotifications && (
-              <div
-                ref={notificationRef}
-                className="absolute right-0 mt-4 w-80 bg-white border shadow-lg rounded-lg z-50"
-              >
-                <div className="p-3 border-b font-semibold text-black">
-                  Support Tickets
-                </div>
-
-                <div className="max-h-60 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <p className="p-3 text-gray-500 text-sm">
-                      No notifications
-                    </p>
-                  ) : (
-                    notifications.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => {
-                          openComplaints(item.id);
-                        }}
-                        className="border-b p-3 text-sm hover:bg-gray-100 cursor-pointer"
-                      >
-                        <p className="font-medium text-black">{item.issue}</p>
-                        <p className="text-gray-500 text-xs">
-                          Ticket: {item.ticketId}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-          {/* 📅 Calendar */}
+        {/* <div className="flex items-center gap-4">
+        // 📅 Calendar 
           <input
             type="date"
             value={selectedDate}
@@ -211,7 +152,7 @@ const InstituteDataPage = ({
             className="border border-gray-300 bg-orange-500 rounded-full px-4 py-2 text-sm text-[#ffffff]
                focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
-        </div>
+        </div>*/}
       </div>
 
       {/* Title + dropdown + date + add */}

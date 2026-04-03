@@ -357,7 +357,7 @@ const SalaryDetailsPage = () => {
               key={trainer.id}
               onClick={() => setSelectedTrainer(trainer)}
               className={`grid grid-cols-5 min-w-[700px] px-6 py-4 border-t items-center cursor-pointer ${
-                selectedTrainer?.id === trainer.id ? "bg-orange-50" : ""
+                selectedTrainer?.id === trainer.id ? "bg-red-100" : ""
               }`}
             >
               <div className="flex items-center">
@@ -366,7 +366,31 @@ const SalaryDetailsPage = () => {
               </div>
               <div>{trainer.designation}</div>
               <div>₹ {trainer.monthlySalary || 0}</div>
-              <div className="text-green-600 font-semibold">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation(); // prevent row selection override
+                  setSelectedTrainer(trainer);
+
+                  if (!selectedMonth) {
+                    alert("Please select a month first!");
+                    return;
+                  }
+
+                  const salaryRecord = salaries.find(
+                    (s) =>
+                      s.trainerId === trainer.id && s.month === selectedMonth,
+                  );
+
+                  setEditData({
+                    monthlySalary: trainer.monthlySalary || "",
+                    paidAmount: salaryRecord?.paidAmount || "",
+                    paidDate: salaryRecord?.paidDate || "",
+                  });
+
+                  setShowEditModal(true);
+                }}
+                className="text-green-600 font-semibold cursor-pointer hover:underline"
+              >
                 ₹ {salaryData.paid}
               </div>
               <div>{salaryData.date}</div>

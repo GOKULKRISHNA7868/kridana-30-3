@@ -207,18 +207,15 @@ const FeesDetailsPage = () => {
         f.month === `${selectedYear}-${selectedMonth}`,
     );
 
-setEditData({
-  totalFee:
-    existingFee?.totalAmount ??
-    student.monthlyFee ??
-    sport.fee ??
-    0,
+    setEditData({
+      totalFee:
+        existingFee?.totalAmount ?? student.monthlyFee ?? sport.fee ?? 0,
 
-  paidAmount: existingFee?.paidAmount ?? "",
-  paidDate: existingFee?.paidDate ?? "",
-  feeWaived: existingFee?.feeWaived ?? false,
-  waiveReason: existingFee?.waiveReason ?? "",
-});
+      paidAmount: existingFee?.paidAmount ?? "",
+      paidDate: existingFee?.paidDate ?? "",
+      feeWaived: existingFee?.feeWaived ?? false,
+      waiveReason: existingFee?.waiveReason ?? "",
+    });
     setShowEditModal(true);
   };
   const updateStudentPayment = async () => {

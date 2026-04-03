@@ -244,6 +244,18 @@ const PaymentOverview = () => {
         .map((s) => s.subCategory),
     ),
   ];
+  if (processing) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-semibold text-gray-700">
+            Please wait, processing payment...
+          </p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white min-h-screen p-8">
       {/* Header */}
@@ -340,8 +352,9 @@ const PaymentOverview = () => {
                     return {
                       category: sport.category,
                       subCategory: sport.subCategory,
+                      amount: Number(sport.fee || 0), // ✅ ADD THIS
                       paidAmount: record?.paidAmount || 0,
-                      paid: record && Number(record.paidAmount) > 0, // ✅ FIX
+                      paid: record && Number(record.paidAmount) > 0,
                     };
                   });
 
@@ -399,7 +412,7 @@ const PaymentOverview = () => {
                         headers: {
                           "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({ amount: totalAmount }),
+                        body: JSON.stringify({ amount: totalAmount * 100 }), // ✅ FIX
                       });
 
                       const order = await res.json();
@@ -476,7 +489,9 @@ const PaymentOverview = () => {
                               Paid ₹{r.paidAmount}
                             </p>
                           ) : (
-                            <p className="text-red-600 text-xs">Unpaid</p>
+                            <p className="text-red-600 text-xs">
+                              Unpaid ₹{r.amount}
+                            </p>
                           )}
                         </div>
                       ))}

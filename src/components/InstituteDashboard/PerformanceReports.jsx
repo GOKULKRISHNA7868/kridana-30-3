@@ -311,6 +311,7 @@ export default function StudentPerformanceReport() {
   const [availableSubCategories, setAvailableSubCategories] = useState([]);
   const [attendancePercent, setAttendancePercent] = useState(null);
   /* 🔽 AUTO-FILL EXISTING REPORT STATE */
+  const [age, setAge] = useState("");
   const [existingReportId, setExistingReportId] = useState(null);
   const [studentSports, setStudentSports] = useState([]);
   const [attendanceStats, setAttendanceStats] = useState({
@@ -329,7 +330,15 @@ export default function StudentPerformanceReport() {
     team: "",
     discipline: "",
   });
+  const getAgeGroup = (age) => {
+    if (!age) return "";
 
+    if (age >= 1 && age <= 10) return "Kids";
+    if (age <= 20) return "Teenage";
+    if (age <= 45) return "Adults";
+    if (age <= 60) return "Middle Age";
+    return "Senior Citizens";
+  };
   const [metricObservations, setMetricObservations] = useState({
     focus: "",
     skill: "",
@@ -364,19 +373,39 @@ export default function StudentPerformanceReport() {
     if (!selectedStudent) return;
 
     const student = students.find((s) => s.id === selectedStudent);
-
     if (!student) return;
 
-    const sports = student.sports || [];
+    // ✅ FIX AGE
+    setAge(getAgeGroup(student.age));
 
+    const sports = student.sports || [];
     setStudentSports(sports);
 
     if (sports.length > 0) {
-      setSelectedCategory(sports[0].category || "");
-      setSelectedSubCategory(sports[0].subCategory || "");
-      setBelt(sports[0].belt || "");
+      const firstSport = sports[0];
+
+      setSelectedCategory(firstSport.category || "");
+      setSelectedSubCategory(firstSport.subCategory || "");
+
+      // ✅ FIX BELT
+      setBelt((firstSport.belt || "").toLowerCase());
     }
-  }, [selectedStudent]);
+  }, [selectedStudent, students]);
+
+  useEffect(() => {
+    if (!selectedCategory || !selectedSubCategory || !studentSports.length)
+      return;
+
+    const matchedSport = studentSports.find(
+      (s) =>
+        s.category === selectedCategory &&
+        s.subCategory === selectedSubCategory,
+    );
+
+    if (matchedSport) {
+      setBelt(matchedSport.belt || "");
+    }
+  }, [selectedCategory, selectedSubCategory]);
   useEffect(() => {
     if (
       selectedStudent &&
@@ -439,18 +468,18 @@ export default function StudentPerformanceReport() {
       })
       .sort((a, b) =>
         `${a.firstName} ${a.lastName}`.localeCompare(
-          `${b.firstName} ${b.lastName}`
-        )
+          `${b.firstName} ${b.lastName}`,
+        ),
       );
 
     console.log("[FILTERED STUDENTS]", filtered);
-   setFilteredStudents(
-  filtered.sort((a, b) =>
-    `${a.firstName} ${a.lastName}`.localeCompare(
-      `${b.firstName} ${b.lastName}`
-    )
-  )
-);
+    setFilteredStudents(
+      filtered.sort((a, b) =>
+        `${a.firstName} ${a.lastName}`.localeCompare(
+          `${b.firstName} ${b.lastName}`,
+        ),
+      ),
+    );
   };
   const [manualAttendance, setManualAttendance] = useState({
     total: "",
@@ -481,8 +510,8 @@ export default function StudentPerformanceReport() {
       const start = dayjs(selectedMonth).startOf("month").format("YYYY-MM-DD");
       const end = dayjs(selectedMonth).endOf("month").format("YYYY-MM-DD");
 
-const q = query(
-  collection(db, "institutes", user.uid, "attendance"),
+      const q = query(
+        collection(db, "institutes", user.uid, "attendance"),
         where("studentId", "==", selectedStudent),
         where("category", "==", selectedCategory),
         where("subCategory", "==", selectedSubCategory),
@@ -935,8 +964,9 @@ const q = query(
 
             <ChevronDown
               size={18}
-              className={`ml-2 transition-transform ${showCategoryDropdown ? "rotate-180" : ""
-                }`}
+              className={`ml-2 transition-transform ${
+                showCategoryDropdown ? "rotate-180" : ""
+              }`}
             />
           </button>
 
@@ -967,8 +997,9 @@ const q = query(
               selectedCategory &&
               setShowSubCategoryDropdown(!showSubCategoryDropdown)
             }
-            className={`${inputClass} flex items-center justify-between text-left ${!selectedCategory && "bg-gray-100 cursor-not-allowed"
-              }`}
+            className={`${inputClass} flex items-center justify-between text-left ${
+              !selectedCategory && "bg-gray-100 cursor-not-allowed"
+            }`}
           >
             <span>
               {selectedSubCategory
@@ -980,8 +1011,9 @@ const q = query(
 
             <ChevronDown
               size={18}
-              className={`ml-2 transition-transform ${showSubCategoryDropdown ? "rotate-180" : ""
-                }`}
+              className={`ml-2 transition-transform ${
+                showSubCategoryDropdown ? "rotate-180" : ""
+              }`}
             />
           </button>
 
@@ -1006,13 +1038,19 @@ const q = query(
           )}
         </div>
         <div className="relative">
-          <select className={`${inputClass} appearance-none pr-8`}>
+          <select
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            className={`${inputClass} appearance-none pr-8`}
+          >
             <option value="">Select Age</option>
-            <option>01 – 10 years Kids</option>
-            <option>11 – 20 years Teenage</option>
-            <option>21 – 45 years Adults</option>
-            <option>45 – 60 years Middle Age</option>
-            <option>61 – 100 years Senior Citizens</option>
+            <option value="Kids">01 – 10 years Kids</option>
+            <option value="Teenage">11 – 20 years Teenage</option>
+            <option value="Adults">21 – 45 years Adults</option>
+            <option value="Middle Age">45 – 60 years Middle Age</option>
+            <option value="Senior Citizens">
+              61 – 100 years Senior Citizens
+            </option>
           </select>
 
           <ChevronDown
@@ -1173,20 +1211,20 @@ const q = query(
                         className="w-full mt-2 p-2 border border-orange-300 rounded-lg bg-white"
                         placeholder="Value"
                         value={physicalFitness[item.toLowerCase()]?.value || ""}
-onChange={(e) => {
-  let value = e.target.value;
+                        onChange={(e) => {
+                          let value = e.target.value;
 
-  // ✅ allow only numbers and one dot
-  if (/^\d*\.?\d*$/.test(value)) {
-    setPhysicalFitness((prev) => ({
-      ...prev,
-      [item.toLowerCase()]: {
-        ...prev[item.toLowerCase()],
-        value,
-      },
-    }));
-  }
-}}
+                          // ✅ allow only numbers and one dot
+                          if (/^\d*\.?\d*$/.test(value)) {
+                            setPhysicalFitness((prev) => ({
+                              ...prev,
+                              [item.toLowerCase()]: {
+                                ...prev[item.toLowerCase()],
+                                value,
+                              },
+                            }));
+                          }
+                        }}
                       />
                       ...
                       <input
@@ -1220,10 +1258,11 @@ onChange={(e) => {
           onClick={handleSave}
           disabled={savingReport}
           className={`px-6 py-2 rounded-lg font-semibold w-full sm:w-auto transition-all
-    ${savingReport
-              ? "bg-gray-400 text-white cursor-not-allowed"
-              : "bg-orange-500 text-white hover:bg-orange-600"
-            }
+    ${
+      savingReport
+        ? "bg-gray-400 text-white cursor-not-allowed"
+        : "bg-orange-500 text-white hover:bg-orange-600"
+    }
   `}
         >
           {savingReport ? "Saving..." : "Save"}

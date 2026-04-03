@@ -143,7 +143,7 @@ export default function Plans() {
         {role === "trainer" && (
           <div className="bg-gray-900 text-white rounded-xl p-8 relative flex flex-col justify-between">
             <span className="absolute top-3 right-3 bg-lime-400 text-black text-xs px-2 py-1 rounded">
-              20% OFF
+              50% OFF
             </span>
 
             <h2 className="text-xl font-bold mb-2">
@@ -181,12 +181,12 @@ export default function Plans() {
             </span>
 
             <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
-              <span className="line-through text-gray-400 text-sm">
-                ₹ {billing === "monthly" ? "999" : "11,990"}
+              <span className="text-white">
+                ₹ {billing === "monthly" ? "499" : "5,988 / Year"}
               </span>
 
-              <span className="text-white">
-                ₹ {billing === "monthly" ? "499/-" : "9,590 / Year"}
+              <span className="line-through text-gray-400 text-sm">
+                ₹ {billing === "monthly" ? "999/-" : "11,988 / Year"}
               </span>
             </h2>
             <p className="text-lime-400 font-semibold mb-4">Institutes Plan</p>

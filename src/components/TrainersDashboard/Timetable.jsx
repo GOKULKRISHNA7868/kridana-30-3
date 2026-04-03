@@ -307,7 +307,8 @@ export default function ClassTime() {
   };
   const [form, setForm] = useState({
     date: "",
-    time: "",
+    startTime: "",
+    endTime: "",
     category: "",
     subCategory: "",
     students: [],
@@ -398,10 +399,8 @@ export default function ClassTime() {
       return;
     }
 
-    const startDateTime = new Date(`${form.date}T${form.time}`);
-    const endDateTime = new Date(startDateTime);
-    endDateTime.setHours(endDateTime.getHours() + 1);
-
+    const startDateTime = new Date(`${form.date}T${form.startTime}`);
+    const endDateTime = new Date(`${form.date}T${form.endTime}`);
     const payload = {
       title: form.subCategory,
       category: form.category,
@@ -448,7 +447,7 @@ export default function ClassTime() {
   /* ---------------- EVENTS ---------------- */
   const events = schedule.map((s) => ({
     id: s.id,
-    title: `${s.title} • (${s.students?.length || 0} Students)`,
+    title: `${s.title}\n${s.trainerName}\n(${s.students?.length || 0} Students)`,
     start: s.start?.toDate ? s.start.toDate() : s.start,
     end: s.end?.toDate ? s.end.toDate() : s.end,
   }));
@@ -464,18 +463,23 @@ export default function ClassTime() {
           right: "timeGridDay,timeGridWeek,dayGridMonth,listYear",
         }}
         allDaySlot={false}
+        eventMinHeight={80}
+        eventDisplay="block"
+        dayMaxEventRows={false}
         height="auto"
         events={events}
         selectable={true}
         select={(info) => {
           const date = info.startStr.split("T")[0];
-          const time = info.startStr.split("T")[1]?.slice(0, 5);
+          const startTime = info.startStr.split("T")[1]?.slice(0, 5);
+          const endTime = info.endStr?.split("T")[1]?.slice(0, 5);
 
           setEditId(null);
 
           setForm({
             date,
-            time,
+            startTime,
+            endTime,
             category: "",
             subCategory: "",
             students: students.map((s) => s.id),
@@ -490,7 +494,8 @@ export default function ClassTime() {
 
           setForm({
             date: info.event.startStr.split("T")[0],
-            time: info.event.startStr.split("T")[1]?.slice(0, 5),
+            startTime: info.event.startStr.split("T")[1]?.slice(0, 5),
+            endTime: info.event.endStr?.split("T")[1]?.slice(0, 5),
             category: event.category || "",
             subCategory: event.subCategory || "",
             students: event.students || [],
@@ -507,7 +512,32 @@ export default function ClassTime() {
             <h3 className="text-xl font-semibold text-center">
               {isEdit ? "✏️ Edit Class" : "📅 Schedule Class"}
             </h3>
+            {/* TIME RANGE */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm text-gray-500">Start Time</label>
+                <input
+                  type="time"
+                  className="w-full border rounded-lg p-2 mt-1"
+                  value={form.startTime}
+                  onChange={(e) =>
+                    setForm({ ...form, startTime: e.target.value })
+                  }
+                />
+              </div>
 
+              <div>
+                <label className="text-sm text-gray-500">End Time</label>
+                <input
+                  type="time"
+                  className="w-full border rounded-lg p-2 mt-1"
+                  value={form.endTime}
+                  onChange={(e) =>
+                    setForm({ ...form, endTime: e.target.value })
+                  }
+                />
+              </div>
+            </div>
             {/* CATEGORY */}
             <div>
               <label className="text-sm text-gray-500">Category</label>

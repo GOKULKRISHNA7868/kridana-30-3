@@ -558,10 +558,11 @@ const ChatBox = () => {
               setActiveTab("chats");
               setScreen("chat");
             }}
-            className={`px-5 py-1 rounded-full text-sm font-medium ${activeTab === "chats"
+            className={`px-5 py-1 rounded-full text-sm font-medium ${
+              activeTab === "chats"
                 ? "bg-orange-500 text-white"
                 : "bg-white border"
-              }`}
+            }`}
           >
             Chats
           </button>
@@ -571,10 +572,11 @@ const ChatBox = () => {
               setActiveTab("group");
               setScreen("chat");
             }}
-            className={`px-5 py-1 rounded-full text-sm font-medium ${activeTab === "group"
+            className={`px-5 py-1 rounded-full text-sm font-medium ${
+              activeTab === "group"
                 ? "bg-orange-500 text-white"
                 : "bg-white border"
-              }`}
+            }`}
           >
             Group
           </button>
@@ -821,7 +823,6 @@ const ChatBox = () => {
 
             <div className="px-4 pb-4">
               <div className="flex items-center gap-3 border rounded-full px-4 py-2 bg-white">
-                <Smile className="w-5 h-5 text-gray-500" />
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -831,11 +832,6 @@ const ChatBox = () => {
                 <Send
                   onClick={sendMessage}
                   className="w-5 h-5 text-orange-500 cursor-pointer"
-                />
-                <Mic
-                  onClick={handleMic}
-                  className={`w-5 h-5 cursor-pointer ${isRecording ? "text-red-500" : "text-gray-600"
-                    }`}
                 />
               </div>
             </div>
@@ -850,69 +846,69 @@ const ChatBox = () => {
         <div className="flex-1 overflow-y-auto">
           {activeTab === "group"
             ? groups
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((g) => (
-                <div
-                  key={g.id}
-                  onClick={() => {
-                    setActiveChat({ id: g.id, type: "group" });
-                    setActiveChatName(g.name);
-                    setScreen("chat");
-                  }}
-                  className="px-4 py-3 border-b hover:bg-gray-100 cursor-pointer flex justify-between items-center"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-orange-200 flex items-center justify-center font-bold text-orange-700">
-                      {g.name?.charAt(0).toUpperCase()}
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((g) => (
+                  <div
+                    key={g.id}
+                    onClick={() => {
+                      setActiveChat({ id: g.id, type: "group" });
+                      setActiveChatName(g.name);
+                      setScreen("chat");
+                    }}
+                    className="px-4 py-3 border-b hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-orange-200 flex items-center justify-center font-bold text-orange-700">
+                        {g.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <span>{g.name}</span>
                     </div>
-                    <span>{g.name}</span>
-                  </div>
 
-                  {unreadCounts[g.id] > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      {unreadCounts[g.id]}
-                    </span>
-                  )}
-                </div>
-              ))
+                    {unreadCounts[g.id] > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {unreadCounts[g.id]}
+                      </span>
+                    )}
+                  </div>
+                ))
             : [...users, ...chatUsers]
-              .sort((a, b) => {
-                // ✅ 1. Institute Admin ALWAYS FIRST
-                if (a.role === "owner") return -1;
-                if (b.role === "owner") return 1;
+                .sort((a, b) => {
+                  // ✅ 1. Institute Admin ALWAYS FIRST
+                  if (a.role === "owner") return -1;
+                  if (b.role === "owner") return 1;
 
-                // ✅ 2. Then sort alphabetically
-                return a.name.localeCompare(b.name);
-              })
-              .map((u) => (
-                <div
-                  key={u.uid}
-                  onClick={() => startChat(u)}
-                  className="px-4 py-3 border-b hover:bg-gray-100 cursor-pointer flex justify-between items-center"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={getValidImage(u.profileImageUrl, u.name)}
-                      className="w-9 h-9 rounded-full object-cover"
-                    />
-                    <div className="flex items-center gap-2">
-                      <span>{u.name}</span>
+                  // ✅ 2. Then sort alphabetically
+                  return a.name.localeCompare(b.name);
+                })
+                .map((u) => (
+                  <div
+                    key={u.uid}
+                    onClick={() => startChat(u)}
+                    className="px-4 py-3 border-b hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={getValidImage(u.profileImageUrl, u.name)}
+                        className="w-9 h-9 rounded-full object-cover"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span>{u.name}</span>
 
-                      {u.role === "outer" && (
-                        <span className="text-[10px] px-2 py-[2px] rounded-full bg-gray-200 text-gray-700">
-                          Outer
-                        </span>
-                      )}
+                        {u.role === "outer" && (
+                          <span className="text-[10px] px-2 py-[2px] rounded-full bg-gray-200 text-gray-700">
+                            Outer
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {unreadCounts[[user?.uid, u.uid].sort().join("_")] > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      {unreadCounts[[user?.uid, u.uid].sort().join("_")]}
-                    </span>
-                  )}
-                </div>
-              ))}
+                    {unreadCounts[[user?.uid, u.uid].sort().join("_")] > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {unreadCounts[[user?.uid, u.uid].sort().join("_")]}
+                      </span>
+                    )}
+                  </div>
+                ))}
         </div>
       </div>
     </div>
