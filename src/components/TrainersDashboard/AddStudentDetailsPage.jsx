@@ -900,8 +900,9 @@ export default function AddTrainerDetailsPage() {
               {[1, 2].map((s) => (
                 <div
                   key={s}
-                  className={`h-3 flex-1 rounded-full ${step >= s ? "bg-orange-500" : "bg-gray-300"
-                    }`}
+                  className={`h-3 flex-1 rounded-full ${
+                    step >= s ? "bg-orange-500" : "bg-gray-300"
+                  }`}
                 />
               ))}
             </div>
@@ -995,35 +996,35 @@ export default function AddTrainerDetailsPage() {
               <label className="text-sm font-semibold mb-2">
                 Date Of Birth*
               </label>
-             <input
-  type="date"
-  className={inputClass}
-  min="1900-01-01"
-  max={new Date().toISOString().split("T")[0]}
-  value={formData.dateOfBirth}
-  onChange={(e) => {
-    const dob = e.target.value;
+              <input
+                type="date"
+                className={inputClass}
+                min="1900-01-01"
+                max={new Date().toISOString().split("T")[0]}
+                value={formData.dateOfBirth}
+                onChange={(e) => {
+                  const dob = e.target.value;
 
-    const birthDate = new Date(dob);
-    const today = new Date();
+                  const birthDate = new Date(dob);
+                  const today = new Date();
 
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
+                  let age = today.getFullYear() - birthDate.getFullYear();
+                  const monthDiff = today.getMonth() - birthDate.getMonth();
 
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
+                  if (
+                    monthDiff < 0 ||
+                    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+                  ) {
+                    age--;
+                  }
 
-    setFormData((prev) => ({
-      ...prev,
-      dateOfBirth: dob,
-      age: age,
-    }));
-  }}
-/>
+                  setFormData((prev) => ({
+                    ...prev,
+                    dateOfBirth: dob,
+                    age: age,
+                  }));
+                }}
+              />
               {errors.dateOfBirth && (
                 <span className="text-red-500 text-xs mt-1">
                   {errors.dateOfBirth}
@@ -1053,18 +1054,20 @@ export default function AddTrainerDetailsPage() {
               </label>
               <input
                 type="date"
-             className={`${inputClass} ${
-  errors.joiningDate ? "border-red-500 focus:border-red-500" : ""
-}`}
+                className={`${inputClass} ${
+                  errors.joiningDate
+                    ? "border-red-500 focus:border-red-500"
+                    : ""
+                }`}
                 min={
                   formData.dateOfBirth
                     ? new Date(
-                      new Date(formData.dateOfBirth).setDate(
-                        new Date(formData.dateOfBirth).getDate() + 1
+                        new Date(formData.dateOfBirth).setDate(
+                          new Date(formData.dateOfBirth).getDate() + 1,
+                        ),
                       )
-                    )
-                      .toISOString()
-                      .split("T")[0]
+                        .toISOString()
+                        .split("T")[0]
                     : "1900-01-01"
                 }
                 max={new Date().toISOString().split("T")[0]}
@@ -1114,8 +1117,9 @@ export default function AddTrainerDetailsPage() {
 
                   <ChevronDown
                     size={16}
-                    className={`transition-transform ${showCategoryDropdown ? "rotate-180" : ""
-                      }`}
+                    className={`transition-transform ${
+                      showCategoryDropdown ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -1165,8 +1169,9 @@ export default function AddTrainerDetailsPage() {
                     formData.category &&
                     setShowSubCategoryDropdown(!showSubCategoryDropdown)
                   }
-                  className={`${inputClass} w-full flex items-center justify-between ${!formData.category && "bg-gray-100 cursor-not-allowed"
-                    }`}
+                  className={`${inputClass} w-full flex items-center justify-between ${
+                    !formData.category && "bg-gray-100 cursor-not-allowed"
+                  }`}
                 >
                   <span>
                     {formData.subCategory
@@ -1178,8 +1183,9 @@ export default function AddTrainerDetailsPage() {
 
                   <ChevronDown
                     size={16}
-                    className={`transition-transform ${showSubCategoryDropdown ? "rotate-180" : ""
-                      }`}
+                    className={`transition-transform ${
+                      showSubCategoryDropdown ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -1286,14 +1292,15 @@ export default function AddTrainerDetailsPage() {
                   <span>
                     {formData.timings
                       ? timeSlots.find((t) => t.value === formData.timings)
-                        ?.label
+                          ?.label
                       : "Select Time"}
                   </span>
 
                   <ChevronDown
                     size={16}
-                    className={`transition-transform ${showTimeDropdown ? "rotate-180" : ""
-                      }`}
+                    className={`transition-transform ${
+                      showTimeDropdown ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -1511,10 +1518,11 @@ export default function AddTrainerDetailsPage() {
                   onClick={handleSubmit}
                   disabled={isSaving}
                   className={`px-10 py-3 rounded-lg font-semibold text-white transition
-    ${isSaving
-                      ? "bg-orange-300 cursor-not-allowed"
-                      : "bg-orange-500 hover:bg-orange-600"
-                    }
+    ${
+      isSaving
+        ? "bg-orange-300 cursor-not-allowed"
+        : "bg-orange-500 hover:bg-orange-600"
+    }
   `}
                 >
                   {isSaving ? "Saving..." : "Save"}

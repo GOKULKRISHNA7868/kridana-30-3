@@ -153,7 +153,9 @@ export default function InstituteDetailsPage() {
               src={inst.profileImageUrl}
               className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-orange-400"
             />
-
+            <h1 className="text-3xl lg:text-4xl font-extrabold text-[#ff7a00] mt-5">
+              {inst.instituteName}
+            </h1>
             <div className="flex gap-1 mt-3">
               {[1, 2, 3, 4, 5].map((s) => (
                 <span
@@ -367,7 +369,27 @@ export default function InstituteDetailsPage() {
             <iframe src={mapSrc} className="w-full h-full" loading="lazy" />
           </div>
         </Card>
+        <div className="mt-14">
+          <h2 className="text-3xl font-bold text-[#ff7a00] mb-6">
+            Categories & Sub Categories
+          </h2>
 
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(inst.categories || {}).map(([cat, subs]) => (
+              <div
+                key={cat}
+                className="border rounded-2xl p-5 shadow-sm hover:shadow-md transition"
+              >
+                <h3 className="font-bold text-lg mb-2">{cat}</h3>
+                <ul className="list-disc ml-5 text-gray-700">
+                  {subs.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
         {/* MEDIA */}
         <Card title="Media Gallery" icon={Star}>
           <MediaGrid
@@ -408,7 +430,7 @@ export default function InstituteDetailsPage() {
 
                     <div>
                       <h3 className="font-bold text-lg">{fb.name}</h3>
-                      <p className="text-sm text-gray-500">Feedback User</p>
+                      <p className="text-sm text-gray-500">Feedback</p>
                     </div>
                   </div>
 
@@ -418,12 +440,6 @@ export default function InstituteDetailsPage() {
                   </p>
 
                   {/* Bottom */}
-                  <div className="mt-5 flex items-center justify-between text-xs text-gray-500 border-t pt-3">
-                    <span className="bg-orange-100 text-orange-600 px-2 py-1 rounded-md font-semibold">
-                      ⭐ 5.0
-                    </span>
-                    <span>Just Now</span>
-                  </div>
                 </div>
               ))
             )}

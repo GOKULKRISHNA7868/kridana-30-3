@@ -327,25 +327,30 @@ export default function ViewInstitutes() {
     fetchInstitutes();
   }, []);
 
-const filteredInstitutes = useMemo(() => {
-  return institutes
-    .filter((i) => {
-      if (category && !i.categories?.[category]) return false;
-      if (subCategory && !i.categories?.[category]?.includes(subCategory))
-        return false;
-      if (city && i.city?.trim().toLowerCase() !== city.trim().toLowerCase())
-        return false;
-      if (minRating && (i.rating || 0) < Number(minRating)) return false;
-      return true;
-    })
-    // ✅ ADD THIS SORT
-   .sort((a, b) => {
-  const nameA = (a.instituteName || "").toLowerCase();
-  const nameB = (b.instituteName || "").toLowerCase();
+  const filteredInstitutes = useMemo(() => {
+    return (
+      institutes
+        .filter((i) => {
+          if (category && !i.categories?.[category]) return false;
+          if (subCategory && !i.categories?.[category]?.includes(subCategory))
+            return false;
+          if (
+            city &&
+            i.city?.trim().toLowerCase() !== city.trim().toLowerCase()
+          )
+            return false;
+          if (minRating && (i.rating || 0) < Number(minRating)) return false;
+          return true;
+        })
+        // ✅ ADD THIS SORT
+        .sort((a, b) => {
+          const nameA = (a.instituteName || "").toLowerCase();
+          const nameB = (b.instituteName || "").toLowerCase();
 
-  return nameA.localeCompare(nameB);
-});
-}, [institutes, category, subCategory, city, minRating]);
+          return nameA.localeCompare(nameB);
+        })
+    );
+  }, [institutes, category, subCategory, city, minRating]);
 
   if (loading)
     return (
@@ -486,13 +491,16 @@ rounded-md px-3 h-[45px] cursor-pointer`}
       {filteredInstitutes.length === 0 ? (
         <div className="text-center mt-12">
           <img
-            src="/institue.png"
+            src="/trainer.png"
             alt="No trainers"
             className="mx-auto w-32 mb-4 opacity-80"
           />
-
+          <h1 className="text-2xl font-bold mb-2">
+            We're curating the best institutes for you
+          </h1>
           <p className="text-gray-500 text-xl">
-            No institutes found for the selected filters.
+            Our team is reviewing and adding top-notch institutes to ensure you
+            get the best options. Please check back soon!
           </p>
         </div>
       ) : (
@@ -501,7 +509,7 @@ rounded-md px-3 h-[45px] cursor-pointer`}
             <div
               key={inst.id}
               onClick={() => navigate(`/institutes/${inst.id}`)}
-            className="bg-white rounded-[18px] shadow-lg border cursor-pointer hover:scale-[1.02] transition-transform flex flex-col justify-between h-[320px]"
+              className="bg-white rounded-[18px] shadow-lg border cursor-pointer hover:scale-[1.02] transition-transform flex flex-col justify-between h-[320px]"
             >
               <div className="h-[160px] rounded-t-[18px] overflow-hidden flex items-center justify-center bg-white">
                 {inst.profileImageUrl ? (
@@ -515,26 +523,27 @@ rounded-md px-3 h-[45px] cursor-pointer`}
                 )}
               </div>
 
-             <div className="p-4 text-center flex flex-col justify-between h-full">
-               <h2 className="text-xl sm:text-2xl font-bold line-clamp-1 min-h-[28px]">
+              <div className="p-4 text-center flex flex-col justify-between h-full">
+                <h2 className="text-xl sm:text-2xl font-bold line-clamp-1 min-h-[28px]">
                   {inst.instituteName}
                 </h2>
-              <p className="text-gray-500 text-sm sm:text-base min-h-[20px]">
+                <p className="text-gray-500 text-sm sm:text-base min-h-[20px]">
                   {inst.city}, {inst.state}
                 </p>
-              <p className="font-semibold mt-1 text-sm sm:text-base flex items-center justify-center gap-1 min-h-[24px]">
-  {inst.rating ? (
-    <>
-      <span className="text-yellow-500">⭐</span>
-      {inst.rating.toFixed(1)}
-    </>
-  ) : (
-    <>
-      <span className="text-gray-400">☆</span>
-      <span className="text-gray-400">No ratings</span>
-    </>
-  )}
-</p><p className="mt-1 text-gray-600 text-xs sm:text-sm min-h-[30px]">
+                <p className="font-semibold mt-1 text-sm sm:text-base flex items-center justify-center gap-1 min-h-[24px]">
+                  {inst.rating ? (
+                    <>
+                      <span className="text-yellow-500">⭐</span>
+                      {inst.rating.toFixed(1)}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-gray-400">☆</span>
+                      <span className="text-gray-400">No ratings</span>
+                    </>
+                  )}
+                </p>
+                <p className="mt-1 text-gray-600 text-xs sm:text-sm min-h-[30px]">
                   Categories:{" "}
                   {inst.categories
                     ? Object.keys(inst.categories).join(", ")

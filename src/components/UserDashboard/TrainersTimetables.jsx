@@ -1,264 +1,212 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
+
+import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import dayjs from "dayjs";
-import { useSelectedStudent } from "../../context/SelectedStudentContext";
-const weeklyDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const monthlyDays = Array.from({ length: 31 }, (_, i) => i + 1);
-const yearlyMonths = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-const times = [
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-];
 
 export default function StudentTimetable() {
-  const [user, setUser] = useState(null);
-  const [studentProfile, setStudentProfile] = useState(null);
-  const [classes, setClasses] = useState([]);
-  const [attendance, setAttendance] = useState([]);
-  const [selectedClass, setSelectedClass] = useState(null);
-  const [viewMode, setViewMode] = useState("weekly");
-  const { selectedStudentUid } = useSelectedStudent();
-  const today = dayjs();
-  const studentUid = selectedStudentUid || user?.uid;
+  const [studentId, setStudentId] = useState("");
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
   /* ---------------- AUTH ---------------- */
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      if (!u) return;
-      setUser(u);
-
-      console.log("[Student] Logged in UID:", u.uid);
-
-      const sRef = doc(db, "students", u.uid);
-      const sSnap = await getDoc(sRef);
-      if (sSnap.exists()) {
-        setStudentProfile(sSnap.data());
-      }
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) setStudentId(user.uid);
     });
-
     return () => unsub();
   }, []);
 
-  /* ---------------- FETCH TIMETABLE (NO INDEX, NO collectionGroup) ---------------- */
+  /* ---------------- LOAD TIMETABLE ---------------- */
   useEffect(() => {
-    if (!studentUid) return;
+    if (!studentId) return;
 
-    const fetchTimetable = async () => {
-      console.log("[StudentTimetable] Fetch timetable via trainers scan");
+    const loadTimetable = async () => {
+      setLoading(true);
 
-      let allClasses = [];
+      try {
+        let allEvents = [];
 
-      const trainersSnap = await getDocs(collection(db, "trainers"));
+        const trainerSnap = await getDocs(collection(db, "trainers"));
 
-      console.log("[DEBUG] Trainers found:", trainersSnap.size);
+        const promises = trainerSnap.docs.map((trainerDoc) => {
+          const trainerId = trainerDoc.id;
 
-      if (trainersSnap.empty) {
-        console.error("❌ No trainers found in /trainers collection");
-        return;
-      }
+          return getDocs(
+            collection(db, "trainers", trainerId, "timetable"),
+          ).then((snap) =>
+            snap.docs.map((docSnap) => ({
+              id: docSnap.id,
+              ...docSnap.data(),
+            })),
+          );
+        });
 
-      const trainerPromises = trainersSnap.docs.map(async (trainerDoc) => {
-        const trainerId = trainerDoc.id;
-        console.log("[DEBUG] Scanning trainer:", trainerId);
+        const results = await Promise.all(promises);
 
-        const ttSnap = await getDocs(
-          collection(db, "trainers", trainerId, "timetables"),
-        );
+        results.flat().forEach((data) => {
+          const isMatched =
+            data.students?.some(
+              (id) => id === studentId || id.startsWith(studentId),
+            ) || false;
 
-        console.log(`[DEBUG] Timetables for ${trainerId}:`, ttSnap.size);
-
-        ttSnap.forEach((docu) => {
-          const data = docu.data();
-
-          if (
-            Array.isArray(data.students) &&
-            data.students.includes(studentUid)
-          ) {
-            console.log("✅ MATCH FOUND:", data);
-
-            allClasses.push({
-              id: docu.id,
-              trainerId,
-              ...data,
-            });
+          if (isMatched) {
+            allEvents.push(data);
           }
         });
-      });
 
-      await Promise.all(trainerPromises);
+        const formatted = allEvents
+          .map((s) => {
+            const start = s.start?.toDate ? s.start.toDate() : null;
+            const end = s.end?.toDate ? s.end.toDate() : null;
 
-      console.log("🔥 FINAL STUDENT TIMETABLE:", allClasses);
-      setClasses(allClasses);
+            if (!start || !end) return null; // skip invalid
+
+            return {
+              id: s.id,
+              title: `${s.title} • ${s.trainerName}`,
+              start,
+              end,
+              fullData: {
+                ...s,
+                start,
+                end,
+              },
+            };
+          })
+          .filter(Boolean);
+
+        setEvents(formatted);
+      } catch (err) {
+        console.error("Error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchTimetable();
-  }, [studentUid]);
-  /* ---------------- FETCH ATTENDANCE ---------------- */
-  useEffect(() => {
-    if (!studentProfile?.instituteId || !user) return;
+    loadTimetable();
+  }, [studentId]);
 
-    const fetchAttendance = async () => {
-      const q = query(
-        collection(db, "institutes", studentProfile.instituteId, "attendance"),
-        where("studentId", "==", studentUid),
-      );
+  /* ---------------- FORMAT TIME ---------------- */
+  const formatTime = (date) => {
+    if (!date) return "";
 
-      const snap = await getDocs(q);
-      const data = snap.docs.map((d) => d.data());
-      setAttendance(data);
-    };
-
-    fetchAttendance();
-  }, [studentProfile, studentUid]);
-
-  /* ---------------- FILTERS ---------------- */
-  const filteredClasses = classes.filter((c) => c.viewMode === viewMode);
-
-  const filteredAttendance = attendance.filter((a) => {
-    if (!a.date) return false;
-    const d = dayjs(a.date);
-
-    if (viewMode === "weekly") return d.isSame(today, "week");
-    if (viewMode === "monthly") return d.isSame(today, "month");
-    if (viewMode === "yearly") return d.isSame(today, "year");
-    return true;
-  });
-
-  /* ---------------- HELPERS ---------------- */
-  const getAttendance = (day, time) =>
-    filteredAttendance.find((a) => a.day === day && a.time === time);
-
-  const attendancePercent = () => {
-    if (filteredAttendance.length === 0) return 0;
-    const present = filteredAttendance.filter(
-      (a) => a.status === "Present",
-    ).length;
-    return Math.round((present / filteredAttendance.length) * 100);
+    return new Intl.DateTimeFormat("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
   };
+  const formatDate = (date) => {
+    if (!date) return "";
 
-  const columns =
-    viewMode === "weekly"
-      ? weeklyDays
-      : viewMode === "monthly"
-        ? monthlyDays
-        : yearlyMonths;
-
+    return new Intl.DateTimeFormat("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date);
+  };
   /* ---------------- UI ---------------- */
+
+  if (loading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center text-gray-500">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-600 mb-3"></div>
+        Loading timetable...
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-2xl font-bold mb-4">📅 My Timetable</h1>
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-lg min-h-screen">
+      {/* HEADER */}
+      <h2 className="text-xl font-semibold mb-3 text-center">
+        📅 My Class Schedule
+      </h2>
 
-      {/* MODE SELECTOR */}
-      <div className="mb-4 flex gap-3">
-        {["weekly", "monthly", "yearly"].map((m) => (
-          <button
-            key={m}
-            onClick={() => setViewMode(m)}
-            className={`px-4 py-2 rounded ${
-              viewMode === m ? "bg-blue-600" : "bg-gray-700"
-            }`}
-          >
-            {m.toUpperCase()}
-          </button>
-        ))}
-      </div>
+      {/* CALENDAR */}
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, listPlugin]}
+        initialView="timeGridWeek"
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "timeGridDay,timeGridWeek,dayGridMonth,listYear",
+        }}
+        allDaySlot={false}
+        height="auto"
+        events={events}
+        eventClick={(info) => {
+          setSelectedEvent(info.event.extendedProps.fullData);
+        }}
+      />
 
-      {/* ATTENDANCE SUMMARY */}
-
-      {/* TIMETABLE GRID */}
-      <div className="overflow-x-auto">
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: `100px repeat(${columns.length},1fr)` }}
-        >
-          <div></div>
-
-          {columns.map((d) => (
-            <div key={d} className="text-center font-semibold bg-gray-700 py-2">
-              {d}
-            </div>
-          ))}
-
-          {times.map((time) => (
-            <React.Fragment key={time}>
-              <div className="bg-gray-700 p-2 font-semibold text-center">
-                {time}
-              </div>
-
-              {columns.map((day) => {
-                const cls = filteredClasses.find(
-                  (c) => c.day === day && c.time === time,
-                );
-
-                const att = getAttendance(day, time);
-
-                if (!cls) return <div key={day + time} />;
-
-                return (
-                  <div
-                    key={day + time}
-                    onClick={() => setSelectedClass({ cls, att })}
-                    className={`cursor-pointer p-2 rounded text-sm text-center ${
-                      att?.status === "Absent" ? "bg-red-700" : "bg-green-700"
-                    }`}
-                  >
-                    <p className="font-semibold">{cls.category}</p>
-                    <p className="text-xs">{cls.trainerName}</p>
-                  </div>
-                );
-              })}
-            </React.Fragment>
-          ))}
+      {/* EMPTY STATE */}
+      {events.length === 0 && (
+        <div className="text-center text-gray-400 mt-6">
+          No classes scheduled yet
         </div>
-      </div>
+      )}
 
-      {/* MODAL */}
-      {selectedClass && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-          <div className="bg-gray-800 p-6 rounded-xl w-96">
-            <h2 className="text-xl font-bold mb-2">
-              {selectedClass.cls.category}
-            </h2>
-            <p>Trainer: {selectedClass.cls.trainerName}</p>
-            <p>Day: {selectedClass.cls.day}</p>
-            <p>Time: {selectedClass.cls.time}</p>
+      {/* ---------- MODAL ---------- */}
+      {selectedEvent && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-3">
+          {/* ---------- MODAL ---------- */}
+          {selectedEvent && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-3">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl w-full max-w-md shadow-xl space-y-4">
+                <h3 className="text-xl font-semibold text-center">
+                  📘 Class Details
+                </h3>
 
-            <button
-              onClick={() => setSelectedClass(null)}
-              className="mt-4 w-full bg-blue-600 py-2 rounded"
-            >
-              Close
-            </button>
-          </div>
+                <div className="space-y-2 text-sm">
+                  <p>
+                    <span className="font-semibold">📌 Category:</span>{" "}
+                    {selectedEvent.category}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">🎯 SubCategory:</span>{" "}
+                    {selectedEvent.subCategory}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">👨‍🏫 Trainer:</span>{" "}
+                    {selectedEvent.trainerName}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">📅 Date:</span>{" "}
+                    {formatDate(selectedEvent.start)}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">🕒 Time:</span>{" "}
+                    {formatTime(selectedEvent.start)} -{" "}
+                    {formatTime(selectedEvent.end)}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">👥 Students:</span>{" "}
+                    {selectedEvent.students?.length || 0}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="w-full bg-gray-200 dark:bg-gray-700 py-2 rounded-lg mt-3"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

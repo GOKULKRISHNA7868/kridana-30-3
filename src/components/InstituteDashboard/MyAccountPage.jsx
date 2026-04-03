@@ -2314,48 +2314,6 @@ const MyAccountPage = ({ setActiveMenu }) => {
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none"
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Session Time
-                    </label>
-                    <input
-                      value={editingStudent?.timings || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-
-                        // allow only numbers
-                        if (/^[0-9]*$/.test(value)) {
-                          setEditingStudent({
-                            ...editingStudent,
-                            timings: value,
-                          });
-                        }
-                      }}
-                      className="w-full border rounded-lg px-3 py-2 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium mb-1">
-                    Session Type
-                  </label>
-                  <input
-                    value={editingStudent?.sessions || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-
-                      // allow only alphabets + spaces
-                      if (/^[A-Za-z\s]*$/.test(value)) {
-                        setEditingStudent({
-                          ...editingStudent,
-                          sessions: value,
-                        });
-                      }
-                    }}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none"
-                  />
                 </div>
               </div>
             </div>

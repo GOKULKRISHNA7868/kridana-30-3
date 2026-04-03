@@ -154,7 +154,7 @@ const TrainersDashboard = () => {
           value: "Customer & Management Settings",
         },
         { label: "My Account", value: "My Account" },
-        { label: "KYC", value: "KYC" },
+        { label: "Complete KYC", value: "Complete KYC" },
         { label: "Payment & Subscription", value: "Payment & Subscription" },
       ],
     },
@@ -344,7 +344,7 @@ const TrainersDashboard = () => {
     if (item === "Chat Box") return setView("chatBox");
 
     if (item === "My Account") return setView("myAccount");
-    if (item === "KYC") return setView("KYC");
+    if (item === "Complete KYC") return setView("KYC");
     if (item === "Customer & Management Settings")
       return setView("CustomerManagementSettings");
     //if (item === "Family Details") return setView("Family");

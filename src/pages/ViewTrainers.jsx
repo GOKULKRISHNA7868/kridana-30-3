@@ -37,8 +37,9 @@ export default function ViewTrainers() {
 
   const defaultSubCategory = searchParams.get("subCategory") || "";
   const isSubCategoryFromURL = Boolean(defaultSubCategory);
-  const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
+
+  const [category, setCategory] = useState(defaultCategory);
+  const [subCategory, setSubCategory] = useState(defaultSubCategory);
 
   const [city, setCity] = useState("");
   const [minRating, setMinRating] = useState("");
@@ -365,12 +366,18 @@ export default function ViewTrainers() {
   const filteredTrainers = useMemo(() => {
     return trainers
       .filter((t) => {
-        if (category && !t.categories?.[category]) return false;
-        if (subCategory && !t.categories?.[category]?.includes(subCategory))
+        if (category && !t.categories?.[category?.trim()]) return false;
+
+        if (
+          subCategory &&
+          !t.categories?.[category?.trim()]?.includes(subCategory?.trim())
+        )
           return false;
 
         if (city && t.city?.trim() !== city.trim()) return false;
+
         if (minRating && (t.rating || 0) < Number(minRating)) return false;
+
         return true;
       })
       .map((t) => {
@@ -545,15 +552,18 @@ export default function ViewTrainers() {
 
       {/* TRAINER LIST */}
       {filteredTrainers.length === 0 ? (
-        <div className="text-center mt-12">
+        <div className="text-center mt-19">
           <img
-            src="/trainer.png"
+            src="/institue.png"
             alt="No trainers"
             className="mx-auto w-32 mb-4 opacity-80"
           />
-
+          <h1 className="text-2xl font-bold mb-2">
+            Trainers will be available shortly
+          </h1>
           <p className="text-gray-500 text-xl">
-            No trainers found for the selected filters.
+            We're currently updating our trainer listings. Please check back
+            soon!
           </p>
         </div>
       ) : (
@@ -565,7 +575,7 @@ export default function ViewTrainers() {
               className="bg-white rounded-[18px] shadow-lg border cursor-pointer hover:scale-[1.02] transition-transform"
             >
               {/* PROFILE IMAGE */}
-            <div className="h-[160px] rounded-t-[18px] overflow-hidden flex items-center justify-center bg-white">
+              <div className="h-[160px] rounded-t-[18px] overflow-hidden flex items-center justify-center bg-white">
                 {t.profileImageUrl ? (
                   <img
                     src={t.profileImageUrl}
@@ -573,7 +583,7 @@ export default function ViewTrainers() {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                 <div className="w-full h-full bg-white" />
+                  <div className="w-full h-full bg-white" />
                 )}
               </div>
 
@@ -589,20 +599,20 @@ export default function ViewTrainers() {
                     📏 {t.distance.toFixed(2)} km away
                   </p>
                 )}
-<p className="text-sm font-semibold mt-1 flex items-center justify-center gap-1">
-  {t.rating ? (
-    <>
-      <span className="text-yellow-500">⭐</span>
-      {t.rating.toFixed(1)}
-      {t.ratingCount ? `(${t.ratingCount})` : ""}
-    </>
-  ) : (
-    <>
-      <span className="text-gray-400">☆</span>
-      <span className="text-gray-400">No ratings</span>
-    </>
-  )}
-</p>
+                <p className="text-sm font-semibold mt-1 flex items-center justify-center gap-1">
+                  {t.rating ? (
+                    <>
+                      <span className="text-yellow-500">⭐</span>
+                      {t.rating.toFixed(1)}
+                      {t.ratingCount ? `(${t.ratingCount})` : ""}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-gray-400">☆</span>
+                      <span className="text-gray-400">No ratings</span>
+                    </>
+                  )}
+                </p>
                 <button className="mt-3 w-full bg-[#ff7a00] text-white py-2 rounded-lg text-sm">
                   View Details
                 </button>

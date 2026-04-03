@@ -47,7 +47,7 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
 
   const uploadToCloudinary = async (file) => {
     setUploading(true);
-    setUploadMsg("");
+    setUploadMsg("Uploading...");
 
     const data = new FormData();
     data.append("file", file);
@@ -68,10 +68,11 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
         throw new Error(result.error?.message || "Upload failed");
       }
 
+      setUploadMsg("Upload successful ✅");
       return result.secure_url;
     } catch (err) {
       console.error("Cloudinary Upload Error:", err);
-      alert("Upload Failed");
+      setUploadMsg("Upload failed ❌");
       return "";
     } finally {
       setUploading(false);
@@ -249,33 +250,67 @@ const ParticipantConfiguration = ({ formData, setFormData }) => {
             <label className="block font-medium mb-2">
               Upload Required Documents*
             </label>
+            {formData?.participants?.requiredDocument && (
+              <div className="mt-2">
+                <p className="text-sm font-medium mb-1">Uploaded Document:</p>
 
-            <div className="border border-orange-300 rounded-lg h-10 flex items-center justify-between px-3">
-              <span className="text-gray-400 text-sm">Upload Documents</span>
+                {/* IMAGE PREVIEW */}
+                {formData.participants.requiredDocument.match(
+                  /\.(jpeg|jpg|png)$/i,
+                ) ? (
+                  <img
+                    src={formData.participants.requiredDocument}
+                    alt="Uploaded"
+                    className="w-32 h-32 object-contain border rounded-md"
+                  />
+                ) : (
+                  /* FILE PREVIEW */
+                  <a
+                    href={formData.participants.requiredDocument}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline text-sm"
+                  >
+                    View Uploaded File
+                  </a>
+                )}
+              </div>
+            )}
+            <div className="border border-orange-300 rounded-lg p-2 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 text-sm">
+                  {uploading ? "Uploading..." : "Upload Documents"}
+                </span>
 
-              <input
-                type="file"
-                id="docs"
-                className="hidden"
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                onChange={async (e) => {
-                  const file = e.target.files[0];
-                  if (!file) return;
+                <input
+                  type="file"
+                  id="docs"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
 
-                  const url = await uploadToCloudinary(file);
+                    const url = await uploadToCloudinary(file);
 
-                  if (url) {
-                    handleChange("requiredDocument", url);
-                  }
-                }}
-              />
-              <label htmlFor="docs" className="cursor-pointer text-orange-500">
-                <img
-                  src="/upload.png"
-                  alt="Upload"
-                  className="w-5 h-5 object-contain"
+                    if (url) {
+                      handleChange("requiredDocument", url);
+                    }
+                  }}
                 />
-              </label>
+
+                <label
+                  htmlFor="docs"
+                  className="cursor-pointer text-orange-500"
+                >
+                  <img src="/upload.png" alt="Upload" className="w-5 h-5" />
+                </label>
+              </div>
+
+              {/* 🔥 Upload Status */}
+              {uploadMsg && (
+                <p className="text-xs text-gray-600">{uploadMsg}</p>
+              )}
             </div>
           </div>
 

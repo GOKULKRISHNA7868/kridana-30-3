@@ -84,7 +84,7 @@ const sidebarSections = [
     items: [
       "Customer & Management Settings",
       "My Account",
-      "kyc",
+      "Complete KYC",
       "Payment & Subscription",
     ],
   },
@@ -270,7 +270,7 @@ const InstituteDashboard = () => {
         return <PaidRecipet />;
       case "Payment & Subscription":
         return <PaymentsSubscriptionPage />;
-      case "kyc":
+      case "Complete KYC":
         return <KYC />;
       case "Complaint History":
         return (

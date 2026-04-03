@@ -1,4 +1,10 @@
 import React, { useEffect, useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
+
 import {
   collection,
   getDocs,
@@ -6,342 +12,568 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
+  getDoc,
 } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 export default function ClassTime() {
-  const [viewMode, setViewMode] = useState("weekly");
+  const [trainerId, setTrainerId] = useState("");
+  const [trainerName, setTrainerName] = useState("");
+  const [students, setStudents] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [students, setStudents] = useState([]);
-  const [allStudents, setAllStudents] = useState([]); // all students of this trainer
-  const [trainerUid, setTrainerUid] = useState("");
 
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const categories = [
+    "Martial Arts",
+    "Team Ball Sports",
+    "Racket Sports",
+    "Fitness",
+    "Target & Precision Sports",
+    "Equestrian Sports",
+    "Adventure & Outdoor Sports",
+    "Ice Sports",
+    "Aquatic Sports",
+    "Wellness",
+    "Dance",
+  ];
+
+  const subCategoryMap = {
+    "Martial Arts": [
+      "Karate",
+      "Kung Fu",
+      "Krav Maga",
+      "Muay Thai",
+      "Taekwondo",
+      "Judo",
+      "Brazilian Jiu-Jitsu",
+      "Aikido",
+      "Jeet Kune Do",
+      "Capoeira",
+      "Sambo",
+      "Silat",
+      "Kalaripayattu",
+      "Hapkido",
+      "Wing Chun",
+      "Shaolin",
+      "Ninjutsu",
+      "Kickboxing",
+      "Boxing",
+      "Wrestling",
+      "Shorinji Kempo",
+      "Kyokushin",
+      "Goju-ryu",
+      "Shotokan",
+      "Wushu",
+      "Savate",
+      "Lethwei",
+      "Bajiquan",
+      "Hung Gar",
+      "Praying Mantis Kung Fu",
+    ],
+    "Team Ball Sports": [
+      "Football / Soccer",
+      "Basketball",
+      "Handball",
+      "Rugby",
+      "Futsal",
+      "Field Hockey",
+      "Lacrosse",
+      "Gaelic Football",
+      "Volleyball",
+      "Beach Volleyball",
+      "Sepak Takraw",
+      "Roundnet (Spikeball)",
+      "Netball",
+      "Cricket",
+      "Baseball",
+      "Softball",
+      "Wheelchair Rugby",
+      "Dodgeball",
+      "Korfball",
+    ],
+    "Racket Sports": [
+      "Tennis",
+      "Table Tennis",
+      "Badminton",
+      "Squash",
+      "Racquetball",
+      "Padel",
+      "Pickleball",
+      "Platform Tennis",
+      "Real Tennis",
+      "Soft Tennis",
+      "Frontenis",
+      "Speedminton (Crossminton)",
+      "Paddle Tennis (POP Tennis)",
+      "Speed-ball",
+      "Chaza",
+      "Totem Tennis (Swingball)",
+      "Matkot",
+      "Jombola",
+    ],
+    Fitness: [
+      "Gym Workout",
+      "Weight Training",
+      "Bodybuilding",
+      "Powerlifting",
+      "CrossFit",
+      "Calisthenics",
+      "Circuit Training",
+      "HIIT",
+      "Functional Training",
+      "Core Training",
+      "Mobility Training",
+      "Stretching",
+      "Resistance Band Training",
+      "Kettlebell Training",
+      "Boot Camp Training",
+      "Spinning",
+      "Step Fitness",
+      "Pilates",
+      "Yoga",
+    ],
+    "Target & Precision Sports": [
+      "Archery",
+      "Golf",
+      "Bowling",
+      "Darts",
+      "Snooker",
+      "Pool",
+      "Billiards",
+      "Target Shooting",
+      "Clay Pigeon Shooting",
+      "Air Rifle Shooting",
+      "Air Pistol Shooting",
+      "Croquet",
+      "Petanque",
+      "Bocce",
+      "Lawn Bowls",
+      "Carom Billiards",
+      "Nine-Pin Bowling",
+      "Disc Golf",
+      "Kubb",
+      "Pitch and Putt",
+      "Shove Ha’penny",
+      "Toad in the Hole",
+      "Bat and Trap",
+      "Boccia",
+      "Gateball",
+    ],
+    "Equestrian Sports": [
+      "Horse Racing",
+      "Barrel Racing",
+      "Rodeo",
+      "Mounted Archery",
+      "Tent Pegging",
+    ],
+    "Adventure & Outdoor Sports": [
+      "Rock Climbing",
+      "Mountaineering",
+      "Trekking",
+      "Hiking",
+      "Mountain Biking",
+      "Sandboarding",
+      "Orienteering",
+      "Obstacle Course Racing",
+      "Skydiving",
+      "Paragliding",
+      "Hang Gliding",
+      "Parachuting",
+      "Hot-air Ballooning",
+      "Skiing",
+      "Snowboarding",
+      "Ice Climbing",
+      "Heli-skiing",
+      "Bungee Jumping",
+      "BASE Jumping",
+      "Canyoning",
+      "Kite Buggy",
+      "Zorbing",
+      "Zip Lining",
+    ],
+    "Aquatic Sports": [
+      "Swimming",
+      "Water Polo",
+      "Surfing",
+      "Scuba Diving",
+      "Snorkeling",
+      "Freediving",
+      "Kayaking",
+      "Canoeing",
+      "Rowing",
+      "Sailing",
+      "Windsurfing",
+      "Kite Surfing",
+      "Jet Skiing",
+      "Wakeboarding",
+      "Water Skiing",
+      "Stand-up Paddleboarding",
+      "Whitewater Rafting",
+      "Dragon Boat Racing",
+      "Artistic Swimming",
+      "Open Water Swimming",
+    ],
+    "Ice Sports": [
+      "Ice Skating",
+      "Figure Skating",
+      "Ice Hockey",
+      "Speed Skating",
+      "Ice Dance",
+      "Synchronized Skating",
+      "Curling",
+      "Broomball",
+      "Bobsleigh",
+      "Skiboarding",
+      "Ice Dragon Boat Racing",
+      "Ice Cross Downhill",
+    ],
+    Wellness: [
+      "Yoga & Meditation",
+      "Spa & Relaxation",
+      "Mental Wellness",
+      "Fitness",
+      "Nutrition",
+      "Traditional & Alternative Therapies",
+      "Rehabilitation",
+      "Lifestyle Coaching",
+    ],
+    Dance: [
+      "Bharatanatyam",
+      "Kathak",
+      "Kathakali",
+      "Kuchipudi",
+      "Odissi",
+      "Mohiniyattam",
+      "Manipuri",
+      "Sattriya",
+      "Chhau",
+      "Yakshagana",
+      "Lavani",
+      "Ghoomar",
+      "Kalbelia",
+      "Garba",
+      "Dandiya Raas",
+      "Bhangra",
+      "Bihu",
+      "Dollu Kunitha",
+      "Theyyam",
+      "Ballet",
+      "Contemporary",
+      "Hip Hop",
+      "Breakdance",
+      "Jazz Dance",
+      "Tap Dance",
+      "Modern Dance",
+      "Street Dance",
+      "House Dance",
+      "Locking",
+      "Popping",
+      "Krumping",
+      "Waacking",
+      "Voguing",
+      "Salsa",
+      "Bachata",
+      "Merengue",
+      "Cha-Cha",
+      "Rumba",
+      "Samba",
+      "Paso Doble",
+      "Jive",
+      "Tango",
+      "Waltz",
+      "Foxtrot",
+      "Quickstep",
+      "Flamenco",
+      "Irish Stepdance",
+      "Scottish Highland Dance",
+      "Morris Dance",
+      "Hula",
+      "Maori Haka",
+      "African Tribal Dance",
+      "Zumba",
+      "K-Pop Dance",
+      "Shuffle Dance",
+      "Electro Dance",
+      "Pole Dance",
+      "Ballroom Dance",
+      "Line Dance",
+      "Square Dance",
+      "Folk Dance",
+      "Contra Dance",
+    ],
+  };
   const [form, setForm] = useState({
-    day: "",
-    time: "09:00",
+    date: "",
+    time: "",
     category: "",
-    session: "",
-    trainerName: "",
+    subCategory: "",
     students: [],
   });
 
-  const weeklyDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const monthlyDays = Array.from({ length: 31 }, (_, i) => i + 1);
-  const yearlyMonths = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const times = [
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-  ];
-  const columns =
-    viewMode === "weekly"
-      ? weeklyDays
-      : viewMode === "monthly"
-        ? monthlyDays
-        : yearlyMonths;
+  const isEdit = !!editId;
 
-  /* ---------------- AUTH & FETCH STUDENTS ---------------- */
+  /* ---------------- AUTH ---------------- */
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setTrainerUid(user.uid);
-        // fetch students for this trainer
-        const trainerDoc = await getDocs(collection(db, "trainers"));
-        const thisTrainerDoc = trainerDoc.docs.find((d) => d.id === user.uid);
-        if (thisTrainerDoc) {
-          const studentUids = thisTrainerDoc.data().students || [];
-          if (studentUids.length > 0) {
-            const studentData = await Promise.all(
-              studentUids.map(async (sid) => {
-                const studentDoc = await getDocs(
-                  collection(db, "trainerstudents"),
-                );
-                const studentInfo = studentDoc.docs.find((s) => s.id === sid);
-                return studentInfo
-                  ? { id: studentInfo.id, ...studentInfo.data() }
-                  : null;
-              }),
-            );
-            setAllStudents(studentData.filter(Boolean));
-            setStudents(studentData.filter(Boolean)); // default show all students
-          }
-        }
-      }
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) setTrainerId(user.uid);
     });
     return () => unsub();
   }, []);
 
-  /* ---------------- FETCH SCHEDULE ---------------- */
+  /* ---------------- LOAD DATA ---------------- */
   useEffect(() => {
-    if (!trainerUid) return;
-    const loadSchedule = async () => {
-      const snap = await getDocs(
-        collection(db, "trainers", trainerUid, "timetables"),
-      );
-      setSchedule(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    if (!trainerId) return;
+
+    const loadData = async () => {
+      try {
+        /* -------- TRAINER DETAILS -------- */
+        const trainerDoc = await getDoc(doc(db, "trainers", trainerId));
+        const trainerData = trainerDoc.data();
+
+        setTrainerName(trainerData?.firstName || "");
+
+        /* -------- GET CORRECT INSTITUTE -------- */
+        const instituteId = trainerData?.instituteId;
+
+        if (instituteId) {
+          const instituteDoc = await getDoc(doc(db, "institutes", instituteId));
+
+          const instituteData = instituteDoc.data();
+
+          setCategoriesMap(instituteData?.categories || {});
+        } else {
+          console.warn("No instituteId found in trainer");
+        }
+
+        setLoadingCategories(false);
+
+        /* -------- TRAINER STUDENTS -------- */
+        const studentSnap = await getDocs(collection(db, "trainerstudents"));
+
+        const studentList = studentSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((s) => s.trainerId === trainerId);
+
+        setStudents(studentList);
+
+        /* -------- TIMETABLE -------- */
+        const timetableSnap = await getDocs(
+          collection(db, "trainers", trainerId, "timetable"),
+        );
+
+        setSchedule(
+          timetableSnap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          })),
+        );
+      } catch (err) {
+        console.error("Error loading:", err);
+        setLoadingCategories(false);
+      }
     };
-    loadSchedule();
-  }, [trainerUid, viewMode]);
 
-  /* ---------------- HANDLE SESSION CHANGE ---------------- */
-  const handleSessionChange = (session) => {
-    setForm((f) => ({ ...f, session, students: [] }));
-    setStudents(allStudents.filter((s) => s.sessions === session));
-  };
+    loadData();
+  }, [trainerId]);
 
-  /* ---------------- SAVE CLASS ---------------- */
+  /* ---------------- AUTO SELECT STUDENTS ---------------- */
+  useEffect(() => {
+    if (students.length > 0 && !editId) {
+      const allIds = students.map((s) => s.id);
+
+      setForm((prev) => ({
+        ...prev,
+        students: allIds,
+      }));
+    }
+  }, [students]);
+
+  /* ---------------- SAVE ---------------- */
   const saveClass = async () => {
-    if (
-      !form.category ||
-      !form.trainerName ||
-      !form.session ||
-      form.students.length === 0 ||
-      !form.day
-    ) {
-      return alert("Please fill all fields");
+    if (!form.category || !form.subCategory) {
+      alert("Please fill all fields");
+      return;
     }
 
-    // check conflicts
-    const batchConflict = schedule.find(
-      (s) =>
-        s.viewMode === viewMode &&
-        s.day === form.day &&
-        s.time === form.time &&
-        s.session === form.session &&
-        s.id !== editId,
-    );
-    if (batchConflict)
-      return alert(
-        `Session ${form.session} already has a class on ${form.day} at ${form.time}`,
-      );
+    const startDateTime = new Date(`${form.date}T${form.time}`);
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setHours(endDateTime.getHours() + 1);
 
     const payload = {
-      viewMode,
-      day: form.day || "", // fallback if empty
-      time: form.time || "",
-      category: form.category || "",
-      session: form.session || "",
-      trainerName: form.trainerName || "",
-      students: form.students || [], // must be array, not undefined
+      title: form.subCategory,
+      category: form.category,
+      subCategory: form.subCategory,
+      start: startDateTime,
+      end: endDateTime,
+      trainerId,
+      trainerName,
+      students: form.students,
       updatedAt: serverTimestamp(),
     };
 
-    if (editId) {
-      await updateDoc(
-        doc(db, "trainers", trainerUid, "timetables", editId),
-        payload,
-      );
-    } else {
-      await addDoc(collection(db, "trainers", trainerUid, "timetables"), {
-        ...payload,
-        createdAt: serverTimestamp(),
-      });
+    try {
+      if (editId) {
+        await updateDoc(
+          doc(db, "trainers", trainerId, "timetable", editId),
+          payload,
+        );
+
+        setSchedule((prev) =>
+          prev.map((item) =>
+            item.id === editId ? { ...item, ...payload } : item,
+          ),
+        );
+      } else {
+        const docRef = await addDoc(
+          collection(db, "trainers", trainerId, "timetable"),
+          {
+            ...payload,
+            createdAt: serverTimestamp(),
+          },
+        );
+
+        setSchedule((prev) => [...prev, { id: docRef.id, ...payload }]);
+      }
+
+      setShowModal(false);
+      setEditId(null);
+    } catch (err) {
+      console.error("Save error:", err);
     }
-
-    // reset form
-    setShowModal(false);
-    setEditId(null);
-    setForm({
-      day: "",
-      time: "09:00",
-      category: "",
-      session: "",
-      trainerName: "",
-      students: [],
-    });
-
-    // refresh schedule
-    const snap = await getDocs(
-      collection(db, "trainers", trainerUid, "timetables"),
-    );
-    setSchedule(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
   };
 
-  /* ---------------- UI ---------------- */
+  /* ---------------- EVENTS ---------------- */
+  const events = schedule.map((s) => ({
+    id: s.id,
+    title: `${s.title} • (${s.students?.length || 0} Students)`,
+    start: s.start?.toDate ? s.start.toDate() : s.start,
+    end: s.end?.toDate ? s.end.toDate() : s.end,
+  }));
+
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg min-h-screen text-black dark:text-white">
-      <h2 className="text-2xl font-bold mb-2 text-orange-600">
-        {viewMode === "weekly"
-          ? "Weekly Timetable"
-          : viewMode === "monthly"
-            ? "Monthly Timetable"
-            : "Yearly Timetable"}
-      </h2>
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-lg min-h-screen">
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+        initialView="timeGridWeek"
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "timeGridDay,timeGridWeek,dayGridMonth,listYear",
+        }}
+        allDaySlot={false}
+        height="auto"
+        events={events}
+        selectable={true}
+        select={(info) => {
+          const date = info.startStr.split("T")[0];
+          const time = info.startStr.split("T")[1]?.slice(0, 5);
 
-      <div className="flex gap-2 mb-4">
-        {["weekly", "monthly", "yearly"].map((mode) => (
-          <button
-            key={mode}
-            onClick={() => setViewMode(mode)}
-            className={`px-4 py-1 rounded ${viewMode === mode ? "bg-orange-500 text-white" : "bg-gray-200"}`}
-          >
-            {mode.toUpperCase()}
-          </button>
-        ))}
-      </div>
+          setEditId(null);
 
-      <div
-        className="grid"
-        style={{ gridTemplateColumns: `100px repeat(${columns.length},1fr)` }}
-      >
-        <div></div>
-        {columns.map((d) => (
-          <div
-            key={d}
-            className="text-center font-semibold bg-orange-100 dark:bg-gray-700 py-2"
-          >
-            {d}
-          </div>
-        ))}
+          setForm({
+            date,
+            time,
+            category: "",
+            subCategory: "",
+            students: students.map((s) => s.id),
+          });
 
-        {times.map((time) => (
-          <React.Fragment key={time}>
-            <div className="bg-orange-100 dark:bg-gray-700 p-2 font-semibold">
-              {time}
-            </div>
-            {columns.map((day) => {
-              const slots = schedule.filter(
-                (s) =>
-                  s.viewMode === viewMode && s.day === day && s.time === time,
-              );
-              return (
-                <div
-                  key={day + time}
-                  className="border p-2 min-h-[70px] space-y-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
-                  onClick={() => {
-                    setShowModal(true);
-                    setForm({
-                      day,
-                      time,
-                      category: "",
-                      session: "",
-                      trainerName: "",
-                      students: [],
-                    });
-                  }}
-                >
-                  {slots.map((s) => (
-                    <div
-                      key={s.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditId(s.id);
-                        setForm({ ...s });
-                        setShowModal(true);
-                      }}
-                      className="bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded text-xs"
-                    >
-                      <div className="font-semibold">{s.category}</div>
-                      <div className="text-gray-600 dark:text-gray-300">
-                        {s.session} Session • {s.trainerName}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </React.Fragment>
-        ))}
-      </div>
+          setShowModal(true);
+        }}
+        eventClick={(info) => {
+          const event = schedule.find((s) => s.id === info.event.id);
 
-      {/* MODAL */}
+          setEditId(event.id);
+
+          setForm({
+            date: info.event.startStr.split("T")[0],
+            time: info.event.startStr.split("T")[1]?.slice(0, 5),
+            category: event.category || "",
+            subCategory: event.subCategory || "",
+            students: event.students || [],
+          });
+
+          setShowModal(true);
+        }}
+      />
+
+      {/* ---------- MODAL ---------- */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded w-[360px] space-y-3">
-            <h3 className="text-lg font-bold">
-              {editId ? "Edit Class" : "Add Class"}
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-3">
+          <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-2xl w-full max-w-md shadow-xl space-y-4">
+            <h3 className="text-xl font-semibold text-center">
+              {isEdit ? "✏️ Edit Class" : "📅 Schedule Class"}
             </h3>
-            <input
-              className="w-full border p-2 bg-transparent"
-              placeholder="Category"
-              value={form.category}
-              onChange={(e) => {
-                let value = e.target.value.replace(/[^A-Za-z\s]/g, "");
 
-                // ✅ Capitalize each word
-                value = value.replace(/\b[a-z]/g, (char) => char.toUpperCase());
-
-                setForm({ ...form, category: value });
-              }}
-            />
-            <input
-              className="w-full border p-2 bg-transparent"
-              placeholder="Trainer Name"
-              value={form.trainerName}
-              onChange={(e) => {
-                let value = e.target.value.replace(/[^A-Za-z\s]/g, "");
-
-                // ✅ Capitalize each word
-                value = value.replace(/\b[a-z]/g, (char) => char.toUpperCase());
-
-                setForm({ ...form, trainerName: value });
-              }}
-            />
-            <select
-              className="w-full border p-2 bg-transparent"
-              value={form.session}
-              onChange={(e) => handleSessionChange(e.target.value)}
-            >
-              <option value="">Sessions</option>
-              <option>Morning</option>
-              <option>Afternoon</option>
-              <option>Evening</option>
-            </select>
-            <select
-              multiple
-              className="w-full border p-2 h-28 bg-transparent"
-              value={form.students} // <- array of selected student IDs
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  students: Array.from(e.target.selectedOptions).map(
-                    (o) => o.value,
-                  ), // only IDs
-                })
-              }
-            >
-              {[...students]
-                .sort((a, b) => a.firstName.localeCompare(b.firstName)) // ✅ SORT HERE
-                .map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.firstName}
+            {/* CATEGORY */}
+            <div>
+              <label className="text-sm text-gray-500">Category</label>
+              <select
+                className="w-full border rounded-lg p-2 mt-1"
+                value={form.category}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    category: e.target.value,
+                    subCategory: "",
+                  })
+                }
+              >
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
                   </option>
                 ))}
-            </select>
-            <button
-              onClick={saveClass}
-              className="bg-green-600 text-white w-full py-2 rounded"
-            >
-              {editId ? "Update Class" : "Save Class"}
-            </button>
-            <button
-              onClick={() => setShowModal(false)}
-              className="w-full text-sm mt-1"
-            >
-              Cancel
-            </button>
+              </select>
+            </div>
+
+            {/* SUBCATEGORY */}
+            <div>
+              <label className="text-sm text-gray-500">Sub Category</label>
+              <select
+                className="w-full border rounded-lg p-2 mt-1"
+                value={form.subCategory}
+                onChange={(e) =>
+                  setForm({ ...form, subCategory: e.target.value })
+                }
+              >
+                <option value="">Select SubCategory</option>
+                {(subCategoryMap[form.category] || []).map((sub) => (
+                  <option key={sub} value={sub}>
+                    {sub}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* STUDENT COUNT */}
+            <div className="bg-blue-50 text-blue-700 text-sm p-2 rounded-lg text-center">
+              👥 {form.students.length} students assigned automatically
+            </div>
+
+            {/* ACTIONS */}
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={saveClass}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
+              >
+                {isEdit ? "Update" : "Save"}
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEditId(null);
+                }}
+                className="flex-1 bg-gray-200 dark:bg-gray-700 py-2 rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
