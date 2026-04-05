@@ -1801,7 +1801,10 @@ const MyAccountPage = ({ setActiveMenu }) => {
                           value={sport.fee || ""}
                           onChange={(e) => {
                             const updated = [...editingStudent.sports];
-                            updated[index].fee = e.target.value;
+
+                            const value = e.target.value.replace(/\D/g, ""); // ✅ ONLY NUMBERS
+
+                            updated[index].fee = value;
 
                             setEditingStudent({
                               ...editingStudent,

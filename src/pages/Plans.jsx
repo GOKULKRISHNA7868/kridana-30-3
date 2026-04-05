@@ -136,7 +136,7 @@ export default function Plans() {
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full px-6">
+      <div className="flex justify-center w-full px-6">
         {/* FREE */}
 
         {/* TRAINER */}
@@ -182,7 +182,7 @@ export default function Plans() {
 
             <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
               <span className="text-white">
-                ₹ {billing === "monthly" ? "499" : "5,988 / Year"}
+                ₹ {billing === "monthly" ? "499" : "5,994 / Year"}
               </span>
 
               <span className="line-through text-gray-400 text-sm">

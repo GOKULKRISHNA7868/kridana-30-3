@@ -37,8 +37,6 @@ const EventAnalytics = () => {
 
       // ✅ SET FIRST EVENT FROM SORTED LIST
       if (sortedData.length) setSelectedEvent(sortedData[0]);
-
-      if (data.length) setSelectedEvent(data[0]);
     };
 
     fetchEvents();
@@ -75,16 +73,19 @@ const EventAnalytics = () => {
       {/* Event Filter */}
       <select
         className="border border-gray-300 px-4 py-2 rounded mb-6"
+        value={selectedEvent?.id || ""}
         onChange={(e) => {
           const event = events.find((ev) => ev.id === e.target.value);
           setSelectedEvent(event);
         }}
       >
-        {events.map((ev) => (
-          <option key={ev.id} value={ev.id}>
-            {ev.basicInfo?.eventName}
-          </option>
-        ))}
+        {events
+          .filter((ev) => ev.basicInfo?.eventName)
+          .map((ev) => (
+            <option key={ev.id} value={ev.id}>
+              {ev.basicInfo?.eventName}
+            </option>
+          ))}
       </select>
 
       {/* Top Summary Cards */}
